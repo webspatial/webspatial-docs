@@ -134,6 +134,11 @@ npm install -D @webspatial/platform-visionos
 
 为了提供空间应用需要的应用信息和[起始窗口的设置](../concepts/spatial-scenes.md#start-scene)，需要在当前网站中[按照 PWA 标准提供 Web App Manifest](../how-to/minimal-pwa.md)。
 
+:::tip[示例文件]
+[webspatial-icon-examples.zip](https://webspatial.dev/assets/guide/webspatial-icon-examples.zip) 包含已经满足 PWA 要求的图标文件和 manifest 文件。
+只需要把它解压到网站中可以通过 URL 公开访问的目录里，然后在 HTML 中用 `<link rel="manifest" href="/app.webmanifest" />` 嵌入 manifest 文件的 URL。
+:::
+
 :::tip[已经是 PWA？]
 如果当前网站原本就是一个 PWA，可以作为 PWA 在 Chrome 里安装，就可以跳过这一步。
 :::
