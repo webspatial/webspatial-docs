@@ -218,6 +218,10 @@ const config: Config = {
       appId: 'LIUME5J8UD',
       apiKey: 'b7d539514fa1d4e67dbbaf010aeb004c', //'56e68bd6f98ae749cbb893fb483e5284',
       indexName: 'webspatial',
+      contextualSearch: false,
+      searchParameters: {
+        facetFilters: ['docusaurus_tag:docs-default-current'],
+      },
     },
     liveCodeBlock: {
       /**
