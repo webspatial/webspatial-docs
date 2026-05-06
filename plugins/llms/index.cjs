@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const DOCS_ROUTE_BASE = '/docs';
+const MARKDOWN_EXTENSION = '.md';
 const SUMMARY_OUTPUT_FILE = 'llms.txt';
 const FULL_OUTPUT_FILE = 'llms-full.txt';
 
@@ -35,6 +36,45 @@ function joinSiteUrl(siteUrl, baseUrl, routePath) {
   return origin
     ? `${origin}${normalizedBaseUrl}${normalizedRoute}`
     : `${normalizedBaseUrl}${normalizedRoute}`;
+}
+
+function toMarkdownRoutePath(routePath) {
+  return `${normalizeRoutePath(routePath)}${MARKDOWN_EXTENSION}`;
+}
+
+function joinMarkdownUrl(siteMetadata, routePath, hash = '') {
+  const markdownRoute = toMarkdownRoutePath(routePath);
+  const routeWithHash = hash ? `${markdownRoute}#${hash}` : markdownRoute;
+
+  return joinSiteUrl(siteMetadata.url, siteMetadata.baseUrl, routeWithHash);
+}
+
+function splitMarkdownTarget(target) {
+  const hashIndex = target.indexOf('#');
+
+  if (hashIndex === -1) {
+    return {targetPath: target, targetHash: ''};
+  }
+
+  return {
+    targetPath: target.slice(0, hashIndex),
+    targetHash: target.slice(hashIndex + 1),
+  };
+}
+
+function isDocsRoutePath(value) {
+  const normalized = normalizeRoutePath(value.replace(/\.(md|mdx)$/i, ''));
+  return (
+    normalized === DOCS_ROUTE_BASE ||
+    normalized.startsWith(`${DOCS_ROUTE_BASE}/`)
+  );
+}
+
+function hasNonMarkdownExtension(targetPath) {
+  return (
+    !!path.posix.extname(targetPath) &&
+    !/\.(md|mdx)$/i.test(targetPath)
+  );
 }
 
 function parseScalar(value) {
@@ -179,33 +219,44 @@ function rewriteRelativeDocLinks(content, docNode, siteMetadata) {
         /(!?\[[^\]]*]\()([^)]+)(\))/g,
         (fullMatch, prefix, target, suffix) => {
           const trimmedTarget = target.trim();
-          const [targetPath, targetHash = ''] = trimmedTarget.split('#');
-          const currentDocUrl = joinSiteUrl(
-            siteMetadata.url,
-            siteMetadata.baseUrl,
-            docNode.routePath,
-          );
+          const {targetPath, targetHash} = splitMarkdownTarget(trimmedTarget);
+          const currentDocUrl = joinMarkdownUrl(siteMetadata, docNode.routePath);
 
           if (trimmedTarget.startsWith('#')) {
             return `${prefix}${currentDocUrl}${trimmedTarget}${suffix}`;
           }
 
           if (
-            /^(https?:|mailto:|tel:|data:|javascript:)/i.test(targetPath) ||
-            targetPath.startsWith('/')
+            /^(https?:|mailto:|tel:|data:|javascript:)/i.test(targetPath)
           ) {
             return fullMatch;
+          }
+
+          if (targetPath.startsWith('/')) {
+            if (
+              !isDocsRoutePath(targetPath) ||
+              hasNonMarkdownExtension(targetPath)
+            ) {
+              return fullMatch;
+            }
+
+            const resolvedRoute = normalizeRoutePath(
+              targetPath.replace(/\.(md|mdx)$/i, ''),
+            );
+            const absoluteUrl = joinMarkdownUrl(
+              siteMetadata,
+              resolvedRoute,
+              targetHash,
+            );
+
+            return `${prefix}${absoluteUrl}${suffix}`;
           }
 
           if (!targetPath) {
             return fullMatch;
           }
 
-          const hasMarkdownExtension = /\.(md|mdx)$/i.test(targetPath);
-          const hasOtherExtension =
-            !!path.posix.extname(targetPath) && !hasMarkdownExtension;
-
-          if (hasOtherExtension) {
+          if (hasNonMarkdownExtension(targetPath)) {
             return fullMatch;
           }
 
@@ -213,10 +264,10 @@ function rewriteRelativeDocLinks(content, docNode, siteMetadata) {
             path.posix.join(path.posix.dirname(docNode.relativePath), targetPath),
           );
           const resolvedRoute = toDocRoute(resolvedRelativePath);
-          const absoluteUrl = joinSiteUrl(
-            siteMetadata.url,
-            siteMetadata.baseUrl,
-            targetHash ? `${resolvedRoute}#${targetHash}` : resolvedRoute,
+          const absoluteUrl = joinMarkdownUrl(
+            siteMetadata,
+            resolvedRoute,
+            targetHash,
           );
 
           return `${prefix}${absoluteUrl}${suffix}`;
@@ -344,7 +395,7 @@ function renderSummaryLines(rootSections, siteMetadata) {
     `> ${siteMetadata.summary}`,
     '',
     'This file is a curated index of the latest English WebSpatial documentation for LLMs and coding agents.',
-    'It excludes legacy 1.0.x docs and localized copies. Follow the linked canonical pages for the authoritative source.',
+    'It excludes legacy 1.0.x docs and localized copies. Follow the linked Markdown pages for the authoritative source.',
     '',
   ];
 
@@ -352,11 +403,7 @@ function renderSummaryLines(rootSections, siteMetadata) {
     lines.push(`## ${sectionNode.label}`, '');
 
     for (const item of collectSummaryItems(sectionNode)) {
-      const itemUrl = joinSiteUrl(
-        siteMetadata.url,
-        siteMetadata.baseUrl,
-        item.routePath,
-      );
+      const itemUrl = joinMarkdownUrl(siteMetadata, item.routePath);
       const description = item.description
         ? `: ${item.description}`
         : '';
@@ -378,11 +425,7 @@ function renderSummaryLines(rootSections, siteMetadata) {
 
 function renderDocLines(docNode, headingLevel, siteMetadata) {
   const heading = '#'.repeat(headingLevel);
-  const sourceUrl = joinSiteUrl(
-    siteMetadata.url,
-    siteMetadata.baseUrl,
-    docNode.routePath,
-  );
+  const sourceUrl = joinMarkdownUrl(siteMetadata, docNode.routePath);
   const content = rewriteRelativeDocLinks(
     docNode.content,
     docNode,
@@ -408,11 +451,7 @@ function renderCategoryLines(categoryNode, headingLevel, siteMetadata) {
 
   if (categoryNode.routePath && categoryNode.description) {
     const overviewHeading = '#'.repeat(headingLevel);
-    const overviewUrl = joinSiteUrl(
-      siteMetadata.url,
-      siteMetadata.baseUrl,
-      categoryNode.routePath,
-    );
+    const overviewUrl = joinMarkdownUrl(siteMetadata, categoryNode.routePath);
 
     lines.push(
       `${overviewHeading} ${categoryNode.label} overview`,
@@ -460,11 +499,7 @@ function renderFullLines(rootSections, siteMetadata) {
 
   for (const sectionNode of rootSections) {
     for (const item of collectSummaryItems(sectionNode)) {
-      const itemUrl = joinSiteUrl(
-        siteMetadata.url,
-        siteMetadata.baseUrl,
-        item.routePath,
-      );
+      const itemUrl = joinMarkdownUrl(siteMetadata, item.routePath);
       const description = item.description
         ? `: ${item.description}`
         : '';
@@ -483,14 +518,64 @@ function renderFullLines(rootSections, siteMetadata) {
   return lines.join('\n');
 }
 
-function writeFile(filePath, content) {
-  fs.mkdirSync(path.dirname(filePath), {recursive: true});
-  fs.writeFileSync(filePath, `${content.trim()}\n`);
+function renderStandaloneDocMarkdown(docNode, siteMetadata) {
+  const content = rewriteRelativeDocLinks(
+    docNode.content,
+    docNode,
+    siteMetadata,
+  );
+  const lines = [`# ${docNode.title}`];
+
+  if (docNode.description) {
+    lines.push('', docNode.description);
+  }
+
+  if (content) {
+    lines.push('', content);
+  }
+
+  return lines.join('\n');
 }
 
-function generateLlmsFiles(context) {
+function renderStandaloneCategoryMarkdown(categoryNode, siteMetadata) {
+  const lines = [`# ${categoryNode.label} overview`];
+
+  if (categoryNode.description) {
+    lines.push('', categoryNode.description);
+  }
+
+  const childItems = categoryNode.children.flatMap((child) => {
+    if (child.type === 'doc') {
+      return [
+        {
+          label: child.title,
+          routePath: child.routePath,
+          description: child.description,
+        },
+      ];
+    }
+
+    return collectSummaryItems(child);
+  });
+
+  if (childItems.length > 0) {
+    lines.push('', '## Contents', '');
+
+    for (const item of childItems) {
+      const itemUrl = joinMarkdownUrl(siteMetadata, item.routePath);
+      const description = item.description
+        ? `: ${item.description}`
+        : '';
+
+      lines.push(`- [${item.label}](${itemUrl})${description}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+function collectLlmsData(context) {
   const docsDir = path.join(context.siteDir, 'docs');
-  const staticDir = path.join(context.siteDir, 'static');
   const topLevelSections = fs
     .readdirSync(docsDir, {withFileTypes: true})
     .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
@@ -508,6 +593,73 @@ function generateLlmsFiles(context) {
       context.siteConfig.baseUrl ||
       '/',
   };
+
+  return {topLevelSections, siteMetadata};
+}
+
+function getBuildFilePathForRoute(outDir, baseUrl, routePath) {
+  return path.join(
+    outDir,
+    trimSlashes(baseUrl || ''),
+    trimSlashes(routePath),
+  );
+}
+
+function writeMarkdownFilesForNode(node, outDir, outputBaseUrl, siteMetadata) {
+  if (node.type === 'doc') {
+    writeFile(
+      getBuildFilePathForRoute(
+        outDir,
+        outputBaseUrl,
+        toMarkdownRoutePath(node.routePath),
+      ),
+      renderStandaloneDocMarkdown(node, siteMetadata),
+    );
+    return;
+  }
+
+  if (node.routePath && node.description) {
+    writeFile(
+      getBuildFilePathForRoute(
+        outDir,
+        outputBaseUrl,
+        toMarkdownRoutePath(node.routePath),
+      ),
+      renderStandaloneCategoryMarkdown(node, siteMetadata),
+    );
+  }
+
+  for (const child of node.children) {
+    writeMarkdownFilesForNode(child, outDir, outputBaseUrl, siteMetadata);
+  }
+}
+
+function generateMarkdownFiles(context, outDir) {
+  if (context.i18n.currentLocale !== context.i18n.defaultLocale) {
+    return;
+  }
+
+  const {topLevelSections, siteMetadata} = collectLlmsData(context);
+  const outputBaseUrl = context.siteConfig.baseUrl || context.baseUrl || '/';
+
+  for (const sectionNode of topLevelSections) {
+    writeMarkdownFilesForNode(
+      sectionNode,
+      outDir,
+      outputBaseUrl,
+      siteMetadata,
+    );
+  }
+}
+
+function writeFile(filePath, content) {
+  fs.mkdirSync(path.dirname(filePath), {recursive: true});
+  fs.writeFileSync(filePath, `${content.trim()}\n`);
+}
+
+function generateLlmsFiles(context) {
+  const staticDir = path.join(context.siteDir, 'static');
+  const {topLevelSections, siteMetadata} = collectLlmsData(context);
   const summaryContent = renderSummaryLines(topLevelSections, siteMetadata);
   const fullContent = renderFullLines(topLevelSections, siteMetadata);
 
@@ -524,6 +676,10 @@ module.exports = function llmsPlugin(context) {
       return null;
     },
 
+    postBuild({outDir}) {
+      generateMarkdownFiles(context, outDir);
+    },
+
     extendCli(cli) {
       cli
         .command('generate-llms-files')
@@ -538,3 +694,4 @@ module.exports = function llmsPlugin(context) {
 };
 
 module.exports.generateLlmsFiles = generateLlmsFiles;
+module.exports.generateMarkdownFiles = generateMarkdownFiles;
