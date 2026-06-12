@@ -64,17 +64,6 @@ A Boolean attribute. If `true`, the model's first available animation automatica
 
 A Boolean attribute. If `true`, the animation automatically seeks back to the start upon reaching the end.
 
-`stagemode`
-
-Controls the built-in user interaction mode for the model.
-
-- `none` (default): no built-in interaction is enabled. All interactions must be handled via [spatial events](#spatial-events).
-- `orbit`: enables a native orbit interaction mode that lets users rotate the model by dragging, without writing any gesture-handling code.
-
-:::caution[Orbit mode interaction conflicts]
-When `stagemode` is set to `orbit`, the view is updated exclusively based on the user's drag input: [`entityTransform`](#transform-and-bounds) becomes read-only and is not updated by the orbit gesture, and the drag gesture handlers `onSpatialDragStart`, `onSpatialDrag`, and `onSpatialDragEnd` are disabled.
-:::
-
 ## `<source>` Child Element {#source-element}
 
 The `<source>` element specifies one or more model resources for the `<Model>` element. It is a void element: it has no content and does not require a closing tag.
