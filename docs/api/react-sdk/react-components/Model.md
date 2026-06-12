@@ -116,7 +116,7 @@ Triggered when the model fails to load. If multiple sources are provided, this e
 
 ## JavaScript API {#javascript-api}
 
-The React `ref` of `<Model>` provides an interface that extends `HTMLDivElement` with the following model element properties and methods.
+The React `ref` of `<Model>` provides an interface with the following model element properties and methods.
 
 ### Source State {#source-state}
 
