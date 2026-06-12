@@ -31,13 +31,95 @@ function Example() {
 
 <Image img={require("/assets/api/model-robot.png")} alt="An animated 3D robot model rendered by the Model component in a spatial scene" />
 
-## Fallback {#fallback}
+## Fallback
 
 If the `enable-xr` marker is not added, or if the current runtime environment does not have [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime), the `<Model>` component automatically falls back to the `<model>` element from Web standards and is rendered by the browser engine. The browser engine on the current platform may not support this new standard yet. You can use `typeof HTMLModelElement !== "undefined"` for feature detection.
 
+:::tip[Polyfill for browsers without model element support]
+For browsers that do not support the `<model>` element natively, you can use the [model element polyfill](https://github.com/immersive-web/model-element-samples/tree/main/model-element-polyfill). With the polyfill, the same code works across all browsers, including the Pico OS browser.
+:::
+
+## Examples
+
+### Single `src`
+
+A basic model embed using the `src` attribute:
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function MyScene() {
+  return <Model src="/modelasset/Duck.glb" enable-xr />;
+}
+```
+
+### Multiple `<source>` elements
+
+Provide both USDZ and GLB formats for cross-platform compatibility:
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function MyScene() {
+  return (
+    <Model enable-xr>
+      <source src="/modelasset/vehicle.usdz" type="model/vnd.usdz+zip" />
+      <source src="/modelasset/vehicle.glb" type="model/gltf-binary" />
+    </Model>
+  );
+}
+```
+
+### Using a `poster` image
+
+Display a poster image while the model is loading:
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function MyScene() {
+  return (
+    <Model
+      src="/MaterialsVariantsShoe.glb"
+      poster="/shoe-poster.png"
+      enable-xr
+    />
+  );
+}
+```
+
+### Autoplay and loop
+
+Automatically play the model's animation in a loop:
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function AnimatedModel() {
+  return <Model src="/animated-robot.glb" autoPlay loop enable-xr />;
+}
+```
+
+### Lazy loading a model
+
+Defer loading until the model is scrolled into view:
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function LongScrollPage() {
+  return (
+    <>
+      {/* ... a lot of content ... */}
+      <Model loading="lazy" src="/modelasset/cone.glb" enable-xr />
+    </>
+  );
+}
+```
+
 In the current version of WebSpatial SDK, `<Model>` supports the following model element APIs:
 
-## Attributes {#attributes}
+## Attributes
 
 Like standard HTML elements, the `<Model>` component supports a range of attributes (passed as React props) to control its behavior.
 
@@ -64,6 +146,7 @@ A Boolean attribute. If `true`, the model's first available animation automatica
 
 A Boolean attribute. If `true`, the animation automatically seeks back to the start upon reaching the end.
 
+
 ## `<source>` Child Element {#source-element}
 
 The `<source>` element specifies one or more model resources for the `<Model>` element. It is a void element: it has no content and does not require a closing tag.
@@ -78,7 +161,7 @@ The URL of the 3D model resource.
 
 The [MIME media type](https://www.iana.org/assignments/media-types/media-types.xhtml#model) of the model. Currently supported types are `model/vnd.usdz+zip` (USDZ) and `model/gltf-binary` (GLB).
 
-## Lifecycle Events {#lifecycle-events}
+## Lifecycle Events
 
 `onLoad`
 
@@ -88,26 +171,20 @@ Triggered when the 3D model has loaded successfully and is ready for display and
 
 Triggered when the model fails to load. If multiple sources are provided, this event fires only after all sources have been attempted and have failed; it does not fire for each individual source failure.
 
-## Spatial Events {#spatial-events}
+## Spatial Events
 
-`<Model>` is a [3D container element](../../../concepts/3d-content-containers.md), so users can interact with its 3D content directly through [spatial events](../../../concepts/natural-interactions.md#spatial-interactions). The following JSX props are supported:
+`<Model>` is a [3D container element](../../../concepts/3d-content-containers.md), so users can interact with its 3D content directly through [spatial events](../../../concepts/natural-interactions.md#spatial-interactions). See the dedicated docs for trigger conditions and usage:
 
-| JSX prop | Fired when | Reference |
-| --- | --- | --- |
-| `onSpatialTap` | The user performs a tap gesture on the model. | [Spatial Tap](../event-api/spatial-tap.md) |
-| `onSpatialDragStart` | The user begins a drag gesture on the model. | [Spatial Drag](../event-api/spatial-drag.md) |
-| `onSpatialDrag` | Continuously while the user drags the model. | [Spatial Drag](../event-api/spatial-drag.md) |
-| `onSpatialDragEnd` | The user releases the drag gesture. | [Spatial Drag](../event-api/spatial-drag.md) |
-| `onSpatialRotate` | The user performs a rotation gesture on the model. | [Spatial Rotate](../event-api/spatial-rotate.md) |
-| `onSpatialRotateEnd` | The user completes the rotation gesture. | [Spatial Rotate](../event-api/spatial-rotate.md) |
-| `onSpatialMagnify` | The user performs a magnification (pinch) gesture on the model. | [Spatial Magnify](../event-api/spatial-magnify.md) |
-| `onSpatialMagnifyEnd` | The user completes the magnification gesture. | [Spatial Magnify](../event-api/spatial-magnify.md) |
+- [Spatial Tap](../event-api/spatial-tap.md): `onSpatialTap`
+- [Spatial Drag](../event-api/spatial-drag.md): `onSpatialDragStart`, `onSpatialDrag`, `onSpatialDragEnd`
+- [Spatial Rotate](../event-api/spatial-rotate.md): `onSpatialRotate`, `onSpatialRotateEnd`
+- [Spatial Magnify](../event-api/spatial-magnify.md): `onSpatialMagnify`, `onSpatialMagnifyEnd`
 
-## JavaScript API {#javascript-api}
+## JavaScript API
 
 The React `ref` of `<Model>` provides an interface with the following model element properties and methods.
 
-### Source State {#source-state}
+### Source State
 
 `currentSrc`
 
@@ -118,7 +195,7 @@ A read-only string that returns the URL of the currently loaded resource.
 This Promise resolves when the model source file has finished loading and processing.
 If the source file cannot be fetched, or the file cannot be parsed as a valid 3D model resource, this Promise rejects.
 
-### Transform and Bounds {#transform-and-bounds}
+### Transform
 
 `entityTransform`
 
@@ -126,15 +203,7 @@ A readable and writable `DOMMatrixReadOnly` representing the [relationship betwe
 
 By default, the 3D model fills as much of `<Model>`'s width or height as possible while preserving its original proportions, so you can control the size of the 3D model by controlling the size of the 2D plane corresponding to `<Model>`.
 
-`boundingBoxCenter`
-
-A read-only `DOMPoint` that indicates the center of the axis-aligned bounding box (AABB) of the model contents. If the model has an animation, the bounding box is computed from the animation's bind pose and remains static for the lifetime of the model. It does not update when `entityTransform` changes.
-
-`boundingBoxExtents`
-
-A read-only `DOMPoint` that indicates the extents of the bounding box of the model contents.
-
-### Animation Playback {#animation-playback}
+### Animation Playback
 
 `duration`
 
@@ -160,117 +229,26 @@ Attempts to play the model's animation, if present. Returns a `Promise` that res
 
 Attempts to pause the playback of the model's animation. If the model is already paused, this method has no effect.
 
-## Examples {#examples}
-
-### Single `src` {#single-src}
-
-A basic model embed using the `src` attribute:
-
-```jsx
-import { Model } from "@webspatial/react-sdk";
-
-function MyScene() {
-  return <Model src="/modelasset/Duck.glb" enable-xr />;
-}
-```
-
-### Multiple `<source>` elements {#multiple-source-elements}
-
-Provide both USDZ and GLB formats for cross-platform compatibility:
-
-```jsx
-import { Model } from "@webspatial/react-sdk";
-
-function MyScene() {
-  return (
-    <Model enable-xr>
-      <source src="/modelasset/vehicle.usdz" type="model/vnd.usdz+zip" />
-      <source src="/modelasset/vehicle.glb" type="model/gltf-binary" />
-    </Model>
-  );
-}
-```
-
-### Using a `poster` image {#using-a-poster-image}
-
-Display a poster image while the model is loading:
-
-```jsx
-import { Model } from "@webspatial/react-sdk";
-
-function MyScene() {
-  return (
-    <Model
-      src="/MaterialsVariantsShoe.glb"
-      poster="/shoe-poster.png"
-      enable-xr
-    />
-  );
-}
-```
-
-### Autoplay and loop {#autoplay-and-loop}
-
-Automatically play the model's animation in a loop:
-
-```jsx
-import { Model } from "@webspatial/react-sdk";
-
-function AnimatedModel() {
-  return <Model src="/animated-robot.glb" autoPlay loop enable-xr />;
-}
-```
-
-### Orbit interaction mode {#orbit-interaction-mode}
-
-Enable built-in drag-to-rotate interaction:
-
-```jsx
-import { Model } from "@webspatial/react-sdk";
-
-function OrbitingDuck() {
-  return <Model src="/modelasset/Duck.glb" stagemode="orbit" enable-xr />;
-}
-```
-
-### Lazy loading a model {#lazy-loading-a-model}
-
-Defer loading until the model is scrolled into view:
-
-```jsx
-import { Model } from "@webspatial/react-sdk";
-
-function LongScrollPage() {
-  return (
-    <>
-      {/* ... a lot of content ... */}
-      <Model loading="lazy" src="/modelasset/cone.glb" enable-xr />
-    </>
-  );
-}
-```
-
-## Availability {#availability}
+## Availability
 
 Support for each API across spatial platforms and WebSpatial SDK versions:
 
-### Attributes and elements {#availability-attributes}
+### Attributes and elements
 
 | API | visionOS | Pico OS | WebSpatial SDK |
 | --- | --- | --- | --- |
 | `model` | 26 | Not supported | 1.1 |
 | `enable-xr` | 26 | 6 α2.0 | 1.1 |
-| `src` | 26 (USD/USDZ) | 6 α2.0 (USD/USDZ/GLB/GLTF) | 1.1 |
+| `src` | 26 (USDZ) | 6 α2.0 (USDZ/GLB) | 1.1 |
 | `onLoad` | 26 | 6 α2.0 | 1.1 |
 | `onError` | 26 | 6 α2.0 | 1.1 |
 | `autoPlay` | 26 | 6 α2.1 | 1.6 |
 | `loop` | 26 | 6 α2.1 | 1.6 |
-| `<source>` | 26 (USD/USDZ) | 6 α2.1 (USD/USDZ/GLB/GLTF) | 1.6 |
+| `<source>` | 26 (USDZ) | 6 α2.1 (USDZ/GLB) | 1.6 |
 | `poster` | 26 | 6 β2.0 | 1.7 |
 | `loading` | 26 | 6 β2.1 | 1.7 |
-| `stagemode` | 26 | 6 | TBD |
 
-### CSS {#availability-css}
+### CSS
 
 | Style | visionOS | Pico OS | WebSpatial SDK |
 | --- | --- | --- | --- |
@@ -281,7 +259,7 @@ Support for each API across spatial platforms and WebSpatial SDK versions:
 | `rotate`, `rotateX`, `rotateY`, `rotateZ`, `rotate3d` | 26 | 6 α2.0 | 1.1 |
 | `scale`, `scaleX`, `scaleY`, `scaleZ`, `scale3d` | 26 | 6 α2.0 | 1.1 |
 
-### JavaScript {#availability-javascript}
+### JavaScript
 
 | API | visionOS | Pico OS | WebSpatial SDK |
 | --- | --- | --- | --- |
@@ -294,11 +272,3 @@ Support for each API across spatial platforms and WebSpatial SDK versions:
 | `play()` | 26 | 6 α2.1 | 1.6 |
 | `pause()` | 26 | 6 α2.1 | 1.6 |
 | `currentTime` | 26 | 6 β2.0 | 1.7 |
-| `boundingBoxCenter` | 26 | 6 | TBD |
-| `boundingBoxExtents` | 26 | 6 | TBD |
-
-## References {#references}
-
-- [A step into the spatial web: the HTML model element in Apple Vision Pro](https://webkit.org/blog/17118/a-step-into-the-spatial-web-the-html-model-element-in-apple-vision-pro/)
-- [The model element explainer](https://github.com/immersive-web/model-element/blob/main/explainer.md)
-- [The `<model>` element specification draft](https://immersive-web.github.io/model-element/)
