@@ -147,7 +147,7 @@ A Boolean attribute. If `true`, the model's first available animation automatica
 A Boolean attribute. If `true`, the animation automatically seeks back to the start upon reaching the end.
 
 
-## `<source>` Child Element {#source-element}
+## `<source>` Child Element
 
 The `<source>` element specifies one or more model resources for the `<Model>` element. It is a void element: it has no content and does not require a closing tag.
 
