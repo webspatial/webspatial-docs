@@ -5,7 +5,7 @@ description: 'Render a static 3D model with multi-format sources, animation play
 
 # `<Model>`
 
-The `<Model>` component implements the [static 3D content container element](../../../concepts/3d-content-containers.md) in the WebSpatial API. This element is compatible with the API of the `<model>` element in Web standards, while also enhancing the standard capability so that the 2D plane corresponding to the element gains the capabilities of a [spatialized HTML element](../../../concepts/spatialized-html-elements.md), and the 3D model can render truly volumetric 3D content in the space in front of that 2D plane.
+The `<Model>` component implements the [3D content container element](../../../concepts/3d-content-containers.md) in the WebSpatial API. This element is compatible with the `<model>` element, while also gaining capabilities of [spatialized elements](../../../concepts/spatialized-html-elements.md). The 3D model can render volumetric content in the space in front of the page.
 
 It handles loading 3D model assets, managing playback of animations embedded in the model file, and responding to [spatial interactions](../../../concepts/natural-interactions.md#spatial-interactions).
 
