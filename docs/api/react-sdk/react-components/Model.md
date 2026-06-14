@@ -1,6 +1,6 @@
 ---
 sidebar_position: 2
-description: 'Render a static 3D model with multi-format sources, animation playback, and built-in spatial interaction, using the Web-standard-inspired `<model>` API.'
+description: 'Render a static 3D model with multi-format sources, animation playback, and built-in spatial interaction, using the `<model>` API.'
 ---
 
 # `<Model>`
