@@ -6,7 +6,12 @@ const sourceDirname = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(sourceDirname, "..");
 
 export const bundledSkillsDir = path.join(packageRoot, "skills");
-export const defaultProjectSkillsDir = path.join(".codex", "skills");
+export const defaultProjectSkillsDir = path.join(".agents", "skills");
+const defaultClaudeSkillsDir = path.join(".claude", "skills");
+export const defaultProjectSkillsDirs = [
+  defaultProjectSkillsDir,
+  defaultClaudeSkillsDir
+];
 
 function isSamePath(left, right) {
   return path.resolve(left) === path.resolve(right);
@@ -58,12 +63,22 @@ async function countFiles(dir) {
 
 export async function syncBundledSkills(options = {}) {
   const projectDir = path.resolve(options.projectDir ?? process.cwd());
-  const skillsRootDir = path.resolve(projectDir, options.skillsDir ?? defaultProjectSkillsDir);
+  const skillsRootDirs = (
+    options.skillsDirs ??
+    (options.skillsDir ? [options.skillsDir] : defaultProjectSkillsDirs)
+  ).map(skillsDir => path.resolve(projectDir, skillsDir));
+  const claudeSkillsRootDir = path.resolve(projectDir, defaultClaudeSkillsDir);
 
-  assertSafeSkillsRoot(projectDir, skillsRootDir);
+  for (const skillsRootDir of skillsRootDirs) {
+    assertSafeSkillsRoot(projectDir, skillsRootDir);
+  }
 
   await fs.access(bundledSkillsDir);
-  await fs.mkdir(skillsRootDir, { recursive: true });
+  await Promise.all(
+    skillsRootDirs.map(skillsRootDir =>
+      fs.mkdir(skillsRootDir, { recursive: true })
+    )
+  );
 
   const sourceEntries = await fs.readdir(bundledSkillsDir, { withFileTypes: true });
   const syncedSkills = [];
@@ -75,22 +90,32 @@ export async function syncBundledSkills(options = {}) {
     }
 
     const sourceSkillDir = path.join(bundledSkillsDir, entry.name);
-    const targetSkillDir = path.join(skillsRootDir, entry.name);
 
-    await fs.rm(targetSkillDir, { recursive: true, force: true });
-    await fs.cp(sourceSkillDir, targetSkillDir, {
-      force: true,
-      preserveTimestamps: true,
-      recursive: true
-    });
+    for (const skillsRootDir of skillsRootDirs) {
+      const targetSkillDir = path.join(skillsRootDir, entry.name);
+
+      await fs.rm(targetSkillDir, { recursive: true, force: true });
+      await fs.cp(sourceSkillDir, targetSkillDir, {
+        // Claude uses SKILL.md but should not receive OpenAI-specific metadata.
+        filter:
+          skillsRootDir === claudeSkillsRootDir
+            ? sourcePath => path.relative(sourceSkillDir, sourcePath) !== "agents"
+            : undefined,
+        force: true,
+        preserveTimestamps: true,
+        recursive: true
+      });
+
+      fileCount += await countFiles(targetSkillDir);
+    }
 
     syncedSkills.push(entry.name);
-    fileCount += await countFiles(targetSkillDir);
   }
 
   return {
     projectDir,
-    skillsRootDir,
+    skillsRootDir: skillsRootDirs[0],
+    skillsRootDirs,
     fileCount,
     skillCount: syncedSkills.length,
     syncedSkills

@@ -106,8 +106,11 @@ function formatActionLines(projectDir, actions) {
     }
 
     if (action.kind === "skills") {
+      const targets = action.outputDirs
+        .map(outputDir => path.relative(projectDir, outputDir))
+        .join(", ");
       lines.push(
-        `- ${action.label}: ${action.skillCount} skill${action.skillCount === 1 ? "" : "s"}, ${action.fileCount} file${action.fileCount === 1 ? "" : "s"} -> ${relativeTarget}`
+        `- ${action.label}: ${action.skillCount} skill${action.skillCount === 1 ? "" : "s"}, ${action.fileCount} file${action.fileCount === 1 ? "" : "s"} -> ${targets}`
       );
       continue;
     }
@@ -126,10 +129,10 @@ function formatActionLines(projectDir, actions) {
 
     if (action.kind === "claude") {
       const summary = action.rootMemoryCreated
-        ? "created CLAUDE.md managed blocks"
+        ? "created CLAUDE.md"
         : action.rootMemoryUpdated
-          ? "updated CLAUDE.md managed blocks"
-          : "reused existing CLAUDE.md managed blocks";
+          ? "updated CLAUDE.md"
+          : "reused existing CLAUDE.md";
       lines.push(
         `- ${action.label}: ${action.fileCount} file${action.fileCount === 1 ? "" : "s"} -> ${relativeTarget} (${summary})`
       );

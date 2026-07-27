@@ -3,7 +3,7 @@ import { syncAgentsGuidance } from "./sync-agents.js";
 import { syncClaudeCodeMemory } from "./sync-claude.js";
 import { defaultDocsOutputDir, syncDocs } from "./sync-docs.js";
 import { syncLocalGitExclude } from "./sync-git-exclude.js";
-import { defaultProjectSkillsDir, syncBundledSkills } from "./sync-skills.js";
+import { defaultProjectSkillsDirs, syncBundledSkills } from "./sync-skills.js";
 
 export const defaultDocsDirName = defaultDocsOutputDir;
 
@@ -15,7 +15,7 @@ export async function prepareAiResources(options = {}) {
   });
   const skills = await syncBundledSkills({
     projectDir,
-    skillsDir: defaultProjectSkillsDir
+    skillsDirs: defaultProjectSkillsDirs
   });
   const agents = await syncAgentsGuidance({
     projectDir
@@ -38,8 +38,9 @@ export async function prepareAiResources(options = {}) {
       },
       {
         kind: "skills",
-        label: "Synced project-local Codex skills",
+        label: "Synced project-local agent skills",
         outputDir: skills.skillsRootDir,
+        outputDirs: skills.skillsRootDirs,
         fileCount: skills.fileCount,
         skillCount: skills.skillCount,
         syncedSkills: skills.syncedSkills

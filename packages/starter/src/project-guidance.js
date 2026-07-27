@@ -4,7 +4,7 @@ export const webspatialProjectGuidance = `
 ### Agent Resources
 
 - If this repository contains project-local WebSpatial agent resources, prefer them before inventing a workflow from scratch.
-- Treat \`.codex/skills/\`, \`.claude/\`, and imported project instruction files as task-routing aids that complement \`.webspatial/docs/\`, not as replacements for the docs.
+- Treat applicable project-local skills and instructions as task-routing aids that complement \`.webspatial/docs/\`, not as replacements for the docs.
 - Choose the local resource whose scope best matches the task, then verify concrete API and configuration details against \`.webspatial/docs/\`.
 
 ### Documentation Priority

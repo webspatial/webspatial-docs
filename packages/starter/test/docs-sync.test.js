@@ -6,7 +6,6 @@ import test from "node:test";
 import { runCli } from "../src/cli.js";
 import {
   bundledScaffoldingDir,
-  bundledClaudeDir,
   bundledDocsDir,
   bundledSkillsDir,
   createProject,
@@ -57,10 +56,13 @@ test("prepareAiResources syncs the bundled WebSpatial AI resources into the targ
   assert.ok(gitExcludeAction);
   assert.equal(docsAction.outputDir, path.join(projectDir, defaultDocsOutputDir));
   assert.equal(docsAction.fileCount, await countFiles(bundledDocsDir));
-  assert.equal(skillsAction.outputDir, path.join(projectDir, ".codex", "skills"));
-  assert.equal(skillsAction.fileCount, await countFiles(bundledSkillsDir));
+  assert.deepEqual(skillsAction.outputDirs, [
+    path.join(projectDir, ".agents", "skills"),
+    path.join(projectDir, ".claude", "skills")
+  ]);
+  assert.equal(skillsAction.fileCount, 3);
   assert.equal(agentsAction.fileCount, 1);
-  assert.equal(claudeAction.fileCount, 2);
+  assert.equal(claudeAction.fileCount, 1);
 
   const copiedDoc = await fs.readFile(
     path.join(docsAction.outputDir, "introduction", "getting-started.md"),
@@ -69,24 +71,42 @@ test("prepareAiResources syncs the bundled WebSpatial AI resources into the targ
 
   assert.match(copiedDoc, /# Getting Started/);
   const copiedSkill = await fs.readFile(
-    path.join(skillsAction.outputDir, "webspatial-sdk-setup", "SKILL.md"),
+    path.join(projectDir, ".agents", "skills", "webspatial-sdk-setup", "SKILL.md"),
     "utf8"
   );
   assert.match(copiedSkill, /Use the local docs under/);
   assert.match(copiedSkill, /do not import WebSpatial APIs from it directly/i);
+  await fs.access(
+    path.join(projectDir, ".claude", "skills", "webspatial-sdk-setup", "SKILL.md")
+  );
+  await fs.access(
+    path.join(
+      projectDir,
+      ".agents",
+      "skills",
+      "webspatial-sdk-setup",
+      "agents",
+      "openai.yaml"
+    )
+  );
+  await assert.rejects(
+    fs.access(
+      path.join(
+        projectDir,
+        ".claude",
+        "skills",
+        "webspatial-sdk-setup",
+        "agents"
+      )
+    ),
+    /ENOENT/
+  );
   const agentsContent = await fs.readFile(path.join(projectDir, "AGENTS.md"), "utf8");
   assert.match(agentsContent, /Documentation Priority/);
   assert.match(agentsContent, /\.webspatial\/docs\/introduction\/getting-started\.md/);
   assert.match(agentsContent, /Installing it as a dependency when the local docs require it is allowed/);
-  const copiedClaudeMemory = await fs.readFile(
-    path.join(projectDir, ".claude", "webspatial-sdk-setup.md"),
-    "utf8"
-  );
-  assert.match(copiedClaudeMemory, /Use the local docs under `\.\.\/\.webspatial\/docs\/`/);
-  assert.match(copiedClaudeMemory, /do not import WebSpatial APIs from it directly/i);
   const rootClaudeMemory = await fs.readFile(path.join(projectDir, "CLAUDE.md"), "utf8");
-  assert.match(rootClaudeMemory, /Documentation Priority/);
-  assert.match(rootClaudeMemory, /@\.claude\/webspatial-sdk-setup\.md/);
+  assert.equal(rootClaudeMemory, "@AGENTS.md\n");
   const excludeContent = await fs.readFile(path.join(projectDir, ".git", "info", "exclude"), "utf8");
   assert.match(excludeContent, /\/\.webspatial\//);
 });
@@ -180,9 +200,9 @@ test("syncDocs rejects output paths outside the target project", async () => {
   );
 });
 
-test("syncBundledSkills preserves unrelated user skills", async () => {
+test("syncBundledSkills targets shared and Claude skill directories", async () => {
   const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "webspatial-starter-skills-"));
-  const customSkillDir = path.join(projectDir, ".codex", "skills", "custom-skill");
+  const customSkillDir = path.join(projectDir, ".agents", "skills", "custom-skill");
 
   await fs.mkdir(customSkillDir, { recursive: true });
   await fs.writeFile(path.join(customSkillDir, "SKILL.md"), "---\nname: custom\n---\n", "utf8");
@@ -190,9 +210,25 @@ test("syncBundledSkills preserves unrelated user skills", async () => {
   const result = await syncBundledSkills({ projectDir });
 
   assert.equal(result.skillCount, 1);
-  await fs.access(path.join(projectDir, ".codex", "skills", "custom-skill", "SKILL.md"));
-  await fs.access(path.join(projectDir, ".codex", "skills", "webspatial-sdk-setup", "SKILL.md"));
-  await fs.access(path.join(projectDir, ".codex", "skills", "webspatial-sdk-setup", "agents", "openai.yaml"));
+  await fs.access(path.join(customSkillDir, "SKILL.md"));
+  await fs.access(
+    path.join(projectDir, ".agents", "skills", "webspatial-sdk-setup", "SKILL.md")
+  );
+  await fs.access(
+    path.join(projectDir, ".claude", "skills", "webspatial-sdk-setup", "SKILL.md")
+  );
+  await assert.rejects(
+    fs.access(
+      path.join(
+        projectDir,
+        ".claude",
+        "skills",
+        "webspatial-sdk-setup",
+        "agents"
+      )
+    ),
+    /ENOENT/
+  );
 });
 
 test("syncAgentsGuidance preserves existing AGENTS.md content and updates only the managed block", async () => {
@@ -212,27 +248,29 @@ test("syncAgentsGuidance preserves existing AGENTS.md content and updates only t
   assert.equal(sectionMatches.length, 1);
 });
 
-test("syncClaudeCodeMemory preserves existing CLAUDE.md content and updates managed blocks once", async () => {
+test("syncClaudeCodeMemory preserves existing content and adds the agents import once", async () => {
   const projectDir = await fs.mkdtemp(path.join(os.tmpdir(), "webspatial-starter-claude-"));
   const rootClaudeMemoryPath = path.join(projectDir, "CLAUDE.md");
 
-  await fs.writeFile(rootClaudeMemoryPath, "# Existing Memory\n\n- Keep current workflows\n", "utf8");
+  await fs.writeFile(
+    rootClaudeMemoryPath,
+    "# Existing Memory\n\n- Keep current workflows\n",
+    "utf8"
+  );
 
   const first = await syncClaudeCodeMemory({ projectDir });
-  assert.equal(first.fileCount, 2);
-  assert.equal(await countFiles(bundledClaudeDir), 1);
+  assert.equal(first.fileCount, 1);
 
   const firstRootMemory = await fs.readFile(rootClaudeMemoryPath, "utf8");
-  assert.match(firstRootMemory, /# Existing Memory/);
-  assert.match(firstRootMemory, /Documentation Priority/);
-  assert.match(firstRootMemory, /@\.claude\/webspatial-sdk-setup\.md/);
+  assert.equal(
+    firstRootMemory,
+    "# Existing Memory\n\n- Keep current workflows\n\n@AGENTS.md\n"
+  );
 
   await syncClaudeCodeMemory({ projectDir });
   const secondRootMemory = await fs.readFile(rootClaudeMemoryPath, "utf8");
-  const importMatches = secondRootMemory.match(/@\.claude\/webspatial-sdk-setup\.md/g) ?? [];
-  const guidanceMatches = secondRootMemory.match(/webspatial-starter:begin:webspatial-project-guidance/g) ?? [];
-  assert.equal(importMatches.length, 1);
-  assert.equal(guidanceMatches.length, 1);
+  const agentsImportMatches = secondRootMemory.match(/@AGENTS\.md/g) ?? [];
+  assert.equal(agentsImportMatches.length, 1);
 });
 
 test("runCli supports the high-level ai command", async () => {
@@ -250,7 +288,8 @@ test("runCli supports the high-level ai command", async () => {
 
   assert.match(stdout, /Prepared WebSpatial AI resources/);
   assert.match(stdout, /\.webspatial\/docs/);
-  assert.match(stdout, /\.codex\/skills/);
+  assert.match(stdout, /\.agents\/skills/);
+  assert.match(stdout, /\.claude\/skills/);
   assert.match(stdout, /AGENTS\.md/);
   assert.match(stdout, /CLAUDE\.md/);
   assert.match(stdout, /\.git\/info\/exclude|no Git repository detected/);
