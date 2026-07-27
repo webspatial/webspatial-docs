@@ -238,7 +238,14 @@ useEffect(() => {
 
 ## Attachment Entity
 
-`<AttachmentEntity>` is an Entity similar to `<Plane>`. It can reference [predeclared 2D HTML/CSS content](#3d-assets) and attach that content onto its own surface.
+The Attachment API lets you render interactive 2D HTML/React content — buttons, labels, HUDs, info panels — as floating panels attached to 3D entities inside `<Reality>`. The attached content shares the same React component tree and state as the host page: clicking a button inside an attachment can update the host page's state, and host page state changes are reflected inside the attachment in real time.
+
+This API consists of two components with separated responsibilities:
+
+- `<AttachmentAsset>` declares **what** to render (the 2D content template). It is a [3D asset declaration](#3d-assets) placed among the top-level children of `<Reality>`, outside `<World>`.
+- `<AttachmentEntity>` declares **where** to render it (position, size, and parent Entity). It is used inside `<World>`.
+
+This asset-vs-entity separation follows the same pattern as [`<ModelAsset>` / `<ModelEntity>`](#model-entity), and supports one-to-many rendering in the same way: a single content template can be rendered at multiple 3D positions at the same time.
 
 :::caution[Current limitation]
 In a later version of WebSpatial SDK, `<AttachmentEntity>` will support `width` and `height` like `<Plane>` does, which it does not currently support, and full [Transform props](#3d-entity), whereas the current version only supports `position`. For now, you need to use the `size` prop to set the size, with the same `px` unit used by 2D content.
@@ -263,3 +270,107 @@ In a later version of WebSpatial SDK, `<AttachmentEntity>` will support `width` 
   </World>
 </Reality>
 ```
+
+### `<AttachmentAsset>` Props
+
+`name`
+
+Required. A string identifier that links this content template to one or more `<AttachmentEntity>` instances. It must match the `attachment` prop on the corresponding entities.
+
+`children`
+
+The React content to render inside the attachment. This can be any valid React JSX — divs, buttons, styled components, stateful components, and so on. The content shares the host page's React tree, so props, context, and state flow naturally.
+
+Usage rules:
+
+- `<AttachmentAsset>` must be a direct child of `<Reality>`, outside `<World>`.
+- If no `<AttachmentEntity>` references the given `name`, the content is not rendered.
+- When multiple `<AttachmentEntity>` instances reference the same `name`, a copy of the same content template is rendered at each position.
+
+### `<AttachmentEntity>` Props
+
+`attachment`
+
+Required. A string matching the `name` prop on the corresponding `<AttachmentAsset>`.
+
+`position`
+
+Optional. The attachment's local position relative to its parent Entity, using the same `m` unit as other [Transform props](#3d-entity). Defaults to the origin.
+
+`size`
+
+Required. An object `{ width: number, height: number }` that sets the attachment's frame dimensions, with the same `px` unit used by 2D content.
+
+`<AttachmentEntity>` must be used inside `<World>` as a descendant of an Entity. It inherits the parent Entity's transform: when the parent Entity moves, the attachment follows it.
+
+`attachment`, `position`, and `size` can all be changed at runtime. The attachment switches to the new content template or updates its position and size accordingly. When the component unmounts, the corresponding native attachment is destroyed automatically.
+
+### Shared State and One-to-Many Rendering
+
+One content template can be rendered at multiple 3D positions at the same time, and the attached content stays connected to the host page's state:
+
+```js
+import { useState } from "react";
+import {
+  Reality,
+  AttachmentAsset,
+  World,
+  Entity,
+  Sphere,
+  AttachmentEntity,
+} from "@webspatial/react-sdk";
+
+function LabeledSpheres() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <Reality style={{ width: "500px", height: "500px", "--xr-depth": 100 }}>
+      {/* One content template, shared with the host page's state */}
+      <AttachmentAsset name="counter">
+        <button onClick={() => setCount(count + 1)}>Clicked {count}</button>
+      </AttachmentAsset>
+      <World>
+        {/* The same template is rendered at two 3D positions */}
+        <Entity position={{ x: -0.5, y: 0, z: 0.3 }}>
+          <Sphere radius={0.1} />
+          <AttachmentEntity
+            attachment="counter"
+            position={{ x: 0, y: 0.25, z: 0 }}
+            size={{ width: 140, height: 48 }}
+          />
+        </Entity>
+        <Entity position={{ x: 0.5, y: 0, z: 0.3 }}>
+          <Sphere radius={0.1} />
+          <AttachmentEntity
+            attachment="counter"
+            position={{ x: 0, y: 0.25, z: 0 }}
+            size={{ width: 140, height: 48 }}
+          />
+        </Entity>
+      </World>
+    </Reality>
+  );
+}
+```
+
+:::info[Styles are inherited automatically]
+The 2D content inside an attachment automatically inherits styles from the host page:
+
+- Global styles on the host page, such as `<link rel="stylesheet">` and `<style>`, are synced into the attachment automatically.
+- Class names on the root element are synced as well, so utility-class approaches such as Tailwind work directly.
+- During development, new styles injected by hot module replacement (HMR) are picked up automatically.
+- Relative URLs inside the attachment resolve against the host page's URL.
+- Inline styles set directly on elements work as expected.
+:::
+
+:::caution[Attachments are 2D-only]
+An attachment is a pure 2D rendering surface. Spatialized content cannot be nested inside it. The following components degrade automatically when placed inside `<AttachmentAsset>`:
+
+| Component | Behavior inside an attachment |
+| --- | --- |
+| `<Reality>` | Not rendered (returns null), with a console warning. |
+| `<SpatialDiv>` | Rendered as plain HTML; spatial props are ignored, while layout and styles still work. |
+| [`<Model>`](./Model.md) | Rendered as the standard `<model>` element, without spatialization. |
+
+Attachments also do not yet support orientation policies such as billboarding (always facing the user).
+:::

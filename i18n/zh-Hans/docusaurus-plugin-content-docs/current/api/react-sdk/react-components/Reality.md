@@ -238,7 +238,14 @@ useEffect(() => {
 
 ## 附着实体 {#attachment-entity}
 
-`<AttachmentEntity>` 是一个类似 `<Plane>` 的 Entity，可以引用[预先声明好的 2D HTML/CSS 内容](#3d-assets)，让它附着在自己表面上。
+Attachment（附着）能力可以把可交互的 2D HTML/React 内容——按钮、文字标签、HUD、信息面板等——作为浮动面板附着到 `<Reality>` 场景中的 3D Entity 上。附着的内容和宿主页面共享同一棵 React 组件树和状态：在 attachment 里点击按钮可以更新宿主页面的状态，宿主页面的状态变化也会实时反映到 attachment 里。
+
+这套 API 由两个职责分离的组件组成：
+
+- `<AttachmentAsset>` 声明**渲染什么**（2D 内容模板），属于 [3D 资产声明](#3d-assets)，作为 `<Reality>` 的顶层子节点放在 `<World>` 之外。
+- `<AttachmentEntity>` 声明**渲染在哪里**（位置、大小、父 Entity），在 `<World>` 内使用。
+
+这种「资产 vs 实体」的分离和 [`<ModelAsset>` / `<ModelEntity>`](#model-entity) 的模式一致，同样支持一对多渲染：同一个内容模板可以同时渲染到多个 3D 位置上。
 
 :::caution[当前限制]
 WebSpatial SDK 后续版本会让 `<AttachmentEntity>` 像 `<Plane>` 一样支持 `width` 和 `height`（当前版本暂不支持）和完整 [Transform 属性](#3d-entity)（当前版本只支持 `position`），需要临时用 `size` 属性设置大小（单位是跟 2D 内容一样的 `px`）。
@@ -263,3 +270,107 @@ WebSpatial SDK 后续版本会让 `<AttachmentEntity>` 像 `<Plane>` 一样支�
   </World>
 </Reality>
 ```
+
+### `<AttachmentAsset>` 属性 {#attachmentasset-props}
+
+`name`
+
+必填。字符串标识符，把这个内容模板关联到一个或多个 `<AttachmentEntity>`，必须和对应实体上的 `attachment` 属性一致。
+
+`children`
+
+要渲染在 attachment 中的 React 内容，可以是任意合法的 React JSX——div、按钮、带样式的组件、有状态的组件等。这些内容共享宿主页面的 React 组件树，props、context 和状态都可以自然流动。
+
+使用规则：
+
+- `<AttachmentAsset>` 必须作为 `<Reality>` 的直接子节点，放在 `<World>` 之外。
+- 如果没有任何 `<AttachmentEntity>` 引用这个 `name`，内容不会被渲染。
+- 多个 `<AttachmentEntity>` 引用同一个 `name` 时，每个位置都会渲染一份相同的内容模板。
+
+### `<AttachmentEntity>` 属性 {#attachmententity-props}
+
+`attachment`
+
+必填。字符串，需要和对应 `<AttachmentAsset>` 的 `name` 属性一致。
+
+`position`
+
+可选。attachment 相对父 Entity 的本地位置，和其他 [Transform 属性](#3d-entity)一样使用 `m` 单位。默认在原点。
+
+`size`
+
+必填。对象 `{ width: number, height: number }`，设置 attachment 的尺寸，单位是和 2D 内容一样的 `px`。
+
+`<AttachmentEntity>` 必须放在 `<World>` 内、作为某个 Entity 的后代节点使用。它继承父 Entity 的变换：父 Entity 移动时，attachment 会跟随移动。
+
+`attachment`、`position` 和 `size` 都可以在运行时动态修改，attachment 会相应切换到新的内容模板或更新位置和大小。组件卸载时，对应的原生 attachment 会被自动销毁。
+
+### 共享状态与一对多渲染 {#shared-state-and-one-to-many-rendering}
+
+同一个内容模板可以同时渲染到多个 3D 位置上，且附着的内容始终和宿主页面的状态保持连接：
+
+```js
+import { useState } from "react";
+import {
+  Reality,
+  AttachmentAsset,
+  World,
+  Entity,
+  Sphere,
+  AttachmentEntity,
+} from "@webspatial/react-sdk";
+
+function LabeledSpheres() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <Reality style={{ width: "500px", height: "500px", "--xr-depth": 100 }}>
+      {/* One content template, shared with the host page's state */}
+      <AttachmentAsset name="counter">
+        <button onClick={() => setCount(count + 1)}>Clicked {count}</button>
+      </AttachmentAsset>
+      <World>
+        {/* The same template is rendered at two 3D positions */}
+        <Entity position={{ x: -0.5, y: 0, z: 0.3 }}>
+          <Sphere radius={0.1} />
+          <AttachmentEntity
+            attachment="counter"
+            position={{ x: 0, y: 0.25, z: 0 }}
+            size={{ width: 140, height: 48 }}
+          />
+        </Entity>
+        <Entity position={{ x: 0.5, y: 0, z: 0.3 }}>
+          <Sphere radius={0.1} />
+          <AttachmentEntity
+            attachment="counter"
+            position={{ x: 0, y: 0.25, z: 0 }}
+            size={{ width: 140, height: 48 }}
+          />
+        </Entity>
+      </World>
+    </Reality>
+  );
+}
+```
+
+:::info[样式自动继承]
+attachment 里的 2D 内容会自动继承宿主页面的样式：
+
+- 宿主页面的全局样式（如 `<link rel="stylesheet">` 和 `<style>`）会自动同步到 attachment 中。
+- 根元素上的 class 名也会同步，因此 Tailwind 这类基于工具类的方案可以直接使用。
+- 开发阶段由热更新（HMR）注入的新样式会被自动同步。
+- attachment 内的相对 URL 会按宿主页面的地址正确解析。
+- 直接写在元素上的内联样式正常生效。
+:::
+
+:::caution[attachment 只支持 2D 内容]
+attachment 是纯 2D 渲染表面，不能在其中嵌套空间化内容。把以下组件放进 `<AttachmentAsset>` 时会自动降级：
+
+| 组件 | 在 attachment 内的行为 |
+| --- | --- |
+| `<Reality>` | 不渲染（返回 null），并在控制台输出警告。 |
+| `<SpatialDiv>` | 降级为普通 HTML 渲染；空间属性被忽略，布局和样式仍然生效。 |
+| [`<Model>`](./Model.md) | 降级为标准 `<model>` 元素渲染，无空间化能力。 |
+
+attachment 暂不支持 billboard（始终朝向用户）之类的朝向策略。
+:::
