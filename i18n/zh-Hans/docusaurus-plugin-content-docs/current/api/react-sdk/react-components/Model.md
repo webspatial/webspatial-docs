@@ -65,9 +65,9 @@ function MyScene() {
 
 ### `poster` {#poster}
 
-`poster` 会在模型文件加载过程中显示一张过渡性的占位图片。当 `<Model>` 作为有真实体积的 3D 内容容器渲染时，这张图片会渲染在 3D 容器的 2D 背板上。当 `<Model>` 在 2D 网页上作为标准 `<model>` 元素渲染时，这张图片相当于暂时把 model element 作为静态 `<img>` 展示，行为与标准 model element 的 `poster` 属性一致。
+`poster` 用于在 3D 模型尚不可用时提供一张占位图片。当 `<Model>` 作为有真实体积的 3D 内容容器渲染时，WebSpatial SDK 会在模型文件加载期间把这张图片显示在 3D 容器的 2D 背板上。在此模式下，如果不提供 `poster`，SDK 会显示内部默认的 loading spinner。
 
-如果不提供 `poster`，WebSpatial SDK 会显示内部默认的 loading spinner。
+当 `<Model>` 在 2D 网页中回退为标准 `<model>` 元素时，WebSpatial 只会把 `poster` 传递给浏览器，具体的展示时机和方式由浏览器而非 SDK 决定。当前的 [model element 规范草案](https://immersive-web.github.io/model-element/#poster-attribute) 说明，浏览器可以在 3D 内容不可用时显示这张图片，并建议在保持宽高比的前提下将其完整放入元素内并居中显示。暂时显示成类似静态 `<img>` 的占位图只是可能的效果之一，不是 WebSpatial SDK 保证的行为；不同原生浏览器的实现可能不同。
 
 ```jsx
 import { Model } from "@webspatial/react-sdk";

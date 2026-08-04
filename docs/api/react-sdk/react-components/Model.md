@@ -65,9 +65,9 @@ The `src` prop can specify only one model file. To provide different model forma
 
 ### `poster`
 
-The `poster` prop displays a transitional placeholder image while the model file is loading. When `<Model>` renders as a volumetric 3D content container, the poster image is rendered on the 2D back plane of that 3D container. When `<Model>` renders as the standard `<model>` element in a 2D webpage, the poster behaves like a temporary static `<img>` representation of the model element, matching the standard model element `poster` attribute.
+The `poster` prop provides a placeholder image for times when the 3D model is not yet available. When `<Model>` renders as a volumetric 3D content container, WebSpatial SDK displays the poster image on the 2D back plane of that container while the model file is loading. If `poster` is not provided in this mode, the SDK displays its internal loading spinner.
 
-If `poster` is not provided, WebSpatial SDK displays its internal loading spinner.
+When `<Model>` falls back to the standard `<model>` element in a 2D webpage, WebSpatial passes `poster` through to the browser; the browser, rather than the SDK, decides how and when to display it. The current [model element draft](https://immersive-web.github.io/model-element/#poster-attribute) says that a user agent can show the image while 3D content is unavailable and recommends fitting it inside the element while preserving its aspect ratio and centering it. A temporary static `<img>`-like placeholder is one possible result, but native browser implementations may differ.
 
 ```jsx
 import { Model } from "@webspatial/react-sdk";
