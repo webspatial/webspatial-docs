@@ -87,9 +87,9 @@ webspatial-starter ai --project-dir ../my-web-app
 By default, the command prepares AI resources in the current project and currently does the following:
 
 - sync the bundled docs into `./.webspatial/docs`
-- sync bundled project-local Codex skills into `./.codex/skills`
+- sync bundled project-local skills into `./.agents/skills` and `./.claude/skills`
 - add or update `./AGENTS.md` with managed WebSpatial project guidance
-- sync Claude Code project memory into `./CLAUDE.md` plus `./.claude/webspatial-sdk-setup.md`
+- prepare `./CLAUDE.md` with matching WebSpatial project guidance
 - when Git is present, add `/.webspatial/` to `.git/info/exclude`
 
 ## Command Reference
@@ -136,19 +136,19 @@ Options:
 Current effects:
 
 - Sync the packaged Markdown docs into `.webspatial/docs`.
-- Sync the packaged Codex skills into `.codex/skills`.
+- Sync the packaged skills into `.agents/skills` and `.claude/skills`.
 - Add or update a managed WebSpatial guidance block in `AGENTS.md`.
-- Sync Claude Code memory resources into `CLAUDE.md` and `.claude/`.
+- Prepare matching WebSpatial project guidance in `CLAUDE.md`.
 - Add a managed `/.webspatial/` rule to `.git/info/exclude` when the project is inside a Git repository.
 
 Behavior:
 
 - The managed docs directory is hidden under `.webspatial/`, so it stays out of the way and does not appear in default `rg` searches.
 - The managed docs directory is replaced on every run so stale files do not remain.
-- Bundled skills are synced into project-local skill folders without clearing unrelated user skills.
+- Bundled skills are synced into `.agents/skills` and `.claude/skills` without clearing unrelated user skills.
 - Existing `AGENTS.md` content is preserved. The command only inserts or updates its own managed WebSpatial section.
-- Claude Code support follows Anthropic's project-memory model: a root `CLAUDE.md` imports a managed file under `.claude/`.
-- Existing `CLAUDE.md` content is preserved. The command only creates the file when it is missing or inserts or updates its own managed blocks.
+- `CLAUDE.md` is prepared automatically so Claude Code receives the same project guidance as other agents.
+- Existing `CLAUDE.md` content is preserved.
 - When `.git/` exists, the command updates `.git/info/exclude` instead of editing the tracked `.gitignore`, so `.webspatial/` stays out of Git by default without creating a noisy repo diff.
 - The managed output paths must stay inside the chosen project directory.
 - The command refuses paths that would overwrite the package's bundled source docs.

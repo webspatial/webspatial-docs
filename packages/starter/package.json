@@ -12,7 +12,6 @@
   },
   "files": [
     "bin",
-    "claude",
     "docs",
     "scaffolding",
     "skills",

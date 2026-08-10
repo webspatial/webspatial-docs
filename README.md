@@ -106,9 +106,9 @@ webspatial-starter ai
 Current effects:
 
 - sync a hidden local docs mirror into `./.webspatial/docs`
-- sync project-local Codex skills into `./.codex/skills`
+- sync project-local skills into `./.agents/skills` and `./.claude/skills`
 - add or update managed WebSpatial guidance in `./AGENTS.md`
-- add or update Claude Code project memory in `./CLAUDE.md` and `./.claude/`
+- prepare matching WebSpatial guidance in `./CLAUDE.md`
 - add `/.webspatial/` to `.git/info/exclude` when the target project is inside a Git repository
 
 Package-local validation:
@@ -173,7 +173,6 @@ Use the full guide for details. The short version:
 - When updating latest English docs, check whether the same change also requires updates in:
   - `packages/starter/src/project-guidance.js`
   - `packages/starter/skills/**`
-  - `packages/starter/claude/**`
 - Keep legacy docs under `1.0.x`. Latest owns naked `/docs/...` URLs.
 - `Getting Started` must remain a normal child page under `Introduction`.
 - Prefer relative links or canonical no-trailing-slash internal URLs.
@@ -221,7 +220,7 @@ Recommended behavior checks after docs-IA or routing changes:
 - old legacy-only naked routes redirect to matching `1.0.x` URLs
 - generated-index cards show intentional summaries instead of placeholder text
 - `packages/starter/docs/` still matches the changed latest English docs in path and meaning
-- any affected files in `packages/starter/src/project-guidance.js`, `packages/starter/skills/**`, and `packages/starter/claude/**` still point at the correct mirrored docs paths and headings
+- any affected files in `packages/starter/src/project-guidance.js` and `packages/starter/skills/**` still point at the correct mirrored docs paths and headings
 
 If you changed `packages/starter/`, also run:
 
