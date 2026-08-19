@@ -15,6 +15,10 @@ description: '在 WebSpatial 布局中完成 2D 像素单位和真实世界米�
 
 不同空间计算平台上的换算关系也不一致，所以应该统一通过这个 API 来转换单位。
 
+:::note[依赖空间化实现]
+在空间化实现加载完成之前，`useMetrics` 只会返回固定的占位值。需要读取真实指标的组件应挂载在 [`<SpatialBoot>`](../react-components/SpatialBoot.md) 内部，确保它们在加载成功后才渲染。
+:::
+
 ## 调用形式 {#signature}
 
 ```js

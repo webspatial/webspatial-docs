@@ -127,10 +127,30 @@ For TypeScript React projects, you only need to configure the [`jsxImportSource`
 :::tip[Related setup guides]
 - For TS projects based on Rspack, you also need to [configure `swc-loader`](../how-to/rspack.md).
 - For JavaScript React projects, you need to [configure the JSX Runtime in the web build tool](../how-to/non-ts.md).
-- For projects with SSR enabled, you need to [add the Context required by the SDK](../how-to/ssr.md).
 :::
 
-### Step 2: Minimal PWA
+### Step 2: Spatial Boot
+
+Wrap the app with the [`<SpatialBoot>` component](../api/react-sdk/react-components/SpatialBoot.md) provided by the React SDK:
+
+```jsx title="main.jsx" {2,5-7}
+import { createRoot } from "react-dom/client";
+import { SpatialBoot } from "@webspatial/react-sdk";
+
+createRoot(document.getElementById("root")).render(
+  <SpatialBoot>
+    <App />
+  </SpatialBoot>,
+);
+```
+
+In a [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime), `<SpatialBoot>` loads the spatial implementation of the SDK, then renders the app with the [WebSpatial API](#webspatial-api) enabled. In ordinary browsers, it renders the app directly and never requests the spatial implementation, so the website's original behavior and performance are unaffected.
+
+:::tip[SSR projects]
+For projects with SSR enabled, mount `<SpatialBoot>` in client-rendered code. See [How to enable WebSpatial in SSR-enabled projects](../how-to/ssr.md).
+:::
+
+### Step 3: Minimal PWA
 
 To provide the app information required by a spatial app and the [settings for the start window](../concepts/spatial-scenes.md#start-scene), the current site must [provide a Web App Manifest following the PWA standard](../how-to/minimal-pwa.md).
 
