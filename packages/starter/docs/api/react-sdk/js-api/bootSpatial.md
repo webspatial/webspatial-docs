@@ -1,15 +1,15 @@
 <!--
 sidebar_position: 4
-description: 'Manually load the spatial implementation and observe spatial readiness from JS code.'
+description: 'Control the loading of the spatial capabilities yourself, from plain JavaScript.'
 -->
 
 # `bootSpatial`
 
 ## Summary
 
-Loads the spatial implementation of the SDK — the same work the [`<SpatialBoot>` component](../react-components/SpatialBoot.md) does automatically.
+Everything the [`<SpatialBoot>` component](../react-components/SpatialBoot.md) does automatically is also available as plain JavaScript functions.
 
-Most apps should use `<SpatialBoot>`. Use the JS APIs on this page only when you need full manual control, for example awaiting the load before the first render in a client-rendered app.
+Most apps never need them — wrapping the app with `<SpatialBoot>` is enough. The APIs on this page are for the few cases where you want to control the loading yourself, for example finishing it *before* the very first render of a client-rendered app.
 
 ## Signature
 
@@ -17,14 +17,14 @@ Most apps should use `<SpatialBoot>`. Use the JS APIs on this page only when you
 function bootSpatial(): Promise<void>
 ```
 
-Behavior:
+What to expect when you call it:
 
-- In ordinary browsers and during server-side rendering, it resolves immediately and does not request the spatial implementation.
-- In a [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime), it dynamically loads the spatial implementation.
-- Concurrent calls share the same in-flight load attempt, and a successful load is cached for the page lifetime.
-- A failed load rejects with [`WebSpatialBootError`](#webspatialbooterror). Calling `bootSpatial()` again after a failure starts a new load attempt.
+- In ordinary browsers and during server-side rendering, it resolves immediately — nothing is downloaded and nothing changes.
+- On spatial computing platforms (in a [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime)), it downloads and initializes the spatial capabilities of the SDK.
+- Calling it multiple times is safe: concurrent calls share one loading attempt, and once loading succeeds, the result is reused for the rest of the page's lifetime.
+- If loading fails, the promise rejects with a [`WebSpatialBootError`](#webspatialbooterror). Calling `bootSpatial()` again simply retries.
 
-Example — manual boot before the first render in a client-rendered app:
+Example — finish loading before the first render of a client-rendered app:
 
 **main.jsx**
 
@@ -43,9 +43,9 @@ try {
 ```
 
 > [!CAUTION]
-> **Not an SSR recipe**
+> **Not for SSR projects**
 >
-> Do not use manual boot as the default pattern in SSR-enabled projects. Mount [`<SpatialBoot>`](../react-components/SpatialBoot.md) in client-rendered code instead. See [How to enable WebSpatial in SSR-enabled projects](../../../how-to/ssr.md).
+> In SSR-enabled projects, don't make this manual pattern your default. Mount [`<SpatialBoot>`](../react-components/SpatialBoot.md) in client-rendered code instead. See [How to enable WebSpatial in SSR-enabled projects](../../../how-to/ssr.md).
 
 ## Related APIs
 
@@ -55,7 +55,7 @@ try {
 function isSpatialReady(): boolean
 ```
 
-Returns `true` only after the spatial implementation has loaded successfully in the current page.
+Tells you whether the spatial capabilities have finished loading on the current page.
 
 ### `useSpatialReady`
 
@@ -63,7 +63,7 @@ Returns `true` only after the spatial implementation has loaded successfully in 
 function useSpatialReady(): boolean
 ```
 
-React Hook that re-renders the component when spatial readiness changes. It returns `false` during server-side rendering and in ordinary browsers.
+The React Hook version of `isSpatialReady`: the component re-renders automatically when the answer changes. It always returns `false` during server-side rendering and in ordinary browsers, so you can also use it to show certain content only on spatial platforms:
 
 ```jsx
 import { Model, useSpatialReady } from "@webspatial/react-sdk";
@@ -87,7 +87,7 @@ function onSpatialLoadError(
 ): () => void
 ```
 
-Registers a listener for spatial implementation load failures. The returned function unsubscribes the listener.
+Lets you get notified whenever loading fails — useful for error reporting. Call the returned function to stop listening.
 
 ```js
 import { onSpatialLoadError } from "@webspatial/react-sdk";
@@ -101,10 +101,10 @@ unsubscribe();
 
 ### `WebSpatialBootError`
 
-The error type used when loading fails.
+The error you receive when loading fails:
 
 | Field | Description |
 | --- | --- |
 | `name` | Always `'WebSpatialBootError'` |
-| `cause` | The original loading error |
-| `attempt` | The 1-based load attempt number |
+| `cause` | The original error that caused the failure |
+| `attempt` | Which loading attempt failed, counting from 1 |

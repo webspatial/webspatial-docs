@@ -1,13 +1,13 @@
 <!--
 sidebar_position: 4
-description: 'Load the spatial implementation of the SDK and render spatial content once it is ready.'
+description: 'Turn on WebSpatial in the app: load the spatial capabilities of the SDK and show spatial content once ready.'
 -->
 
 # `<SpatialBoot>`
 
 ## Summary
 
-`<SpatialBoot>` activates the [WebSpatial API](../../../introduction/getting-started.md#webspatial-api) at runtime. Wrap it around the part of the app that uses WebSpatial — usually the app root, as part of the [basic SDK setup](../../../introduction/getting-started.md#step-2-spatial-boot):
+Before an app can use any WebSpatial feature, the SDK needs to load its spatial capabilities — the part of the SDK that actually makes windows, elements, and 3D content spatial. `<SpatialBoot>` takes care of this automatically: wrap it once around the part of the app that uses WebSpatial — usually the app root, as shown in [Getting Started](../../../introduction/getting-started.md#step-2-spatial-boot) — and you are done.
 
 ```jsx
 import { SpatialBoot } from "@webspatial/react-sdk";
@@ -21,13 +21,17 @@ function AppRoot() {
 }
 ```
 
-- In a [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime), it loads the spatial implementation of the SDK on demand, then renders `children` once loading succeeds.
-- In ordinary browsers, it renders `children` right after mount and never requests the spatial implementation, so the website's original behavior and performance are unaffected.
+What it does for you:
+
+- On spatial computing platforms (in a [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime)), it loads the spatial capabilities in the background, then shows your content once everything is ready.
+- In ordinary browsers, it simply shows your content and skips the loading entirely — visitors never download the extra spatial code, and the website stays exactly as fast as before.
+
+In other words, you don't need to write any platform detection yourself. Add `<SpatialBoot>` once, and the same code works everywhere.
 
 > [!NOTE]
-> **Upgrading from earlier SDK versions**
+> **Upgrading from an earlier SDK version?**
 >
-> Always import WebSpatial APIs from the package root `@webspatial/react-sdk`. Earlier deep import paths such as `@webspatial/react-sdk/web` and `@webspatial/react-sdk/default` have been removed, and the previous `SSRProvider` component has been replaced by `<SpatialBoot>`.
+> Everything is now imported from one place: `@webspatial/react-sdk`. If your code still uses the old deep import paths (`@webspatial/react-sdk/web`, `@webspatial/react-sdk/default`) or the old `SSRProvider` component, update it — those no longer exist, and `<SpatialBoot>` replaces `SSRProvider`.
 
 ## Props
 
@@ -39,15 +43,16 @@ type SpatialBootProps = {
 };
 ```
 
-- `children`: the content to render after the spatial implementation is ready.
-- `onReady`: called once loading succeeds.
-- `onError`: called with a [`WebSpatialBootError`](../js-api/bootSpatial.md#webspatialbooterror) if loading fails.
+- `children`: the content to show once the spatial capabilities are ready.
+- `onReady`: called once, when loading has succeeded.
+- `onError`: called if loading fails, with a [`WebSpatialBootError`](../js-api/bootSpatial.md#webspatialbooterror) describing what went wrong.
 
 ## Behavior
 
-- `<SpatialBoot>` starts loading after it mounts, and renders `null` while loading is pending — including in server-side rendering output.
-- If loading fails, it calls `onError` and keeps `children` unmounted.
-- There is no `fallback` prop. Render loading or error UI outside `<SpatialBoot>`:
+Two things are worth knowing before you use it:
+
+1. **Content inside `<SpatialBoot>` appears only after loading finishes.** While the spatial capabilities are loading — and in server-side rendering output — it shows nothing. If loading fails, the content stays hidden and `onError` is called.
+2. **It has no `fallback` prop, on purpose.** Anything that should always be visible, such as a loading indicator or an error message, belongs *outside* `<SpatialBoot>`:
 
 ```jsx
 import { useState } from "react";
@@ -70,11 +75,11 @@ function SpatialPanel() {
 ```
 
 > [!TIP]
-> **SSR projects**
+> **Using SSR?**
 >
-> In SSR-enabled projects, mount `<SpatialBoot>` in client-rendered code and keep content that must be server-rendered outside it. See [How to enable WebSpatial in SSR-enabled projects](../../../how-to/ssr.md).
+> In SSR-enabled projects, put `<SpatialBoot>` in client-rendered code, and keep content that must appear in server-rendered HTML outside it. See [How to enable WebSpatial in SSR-enabled projects](../../../how-to/ssr.md).
 
 > [!TIP]
-> **Manual control**
+> **Prefer plain JavaScript?**
 >
-> To load the spatial implementation without a wrapper component, or to observe spatial readiness from JS code, use [`bootSpatial` and its related JS APIs](../js-api/bootSpatial.md).
+> If you'd rather control the loading yourself — for example, finish it before the very first render — use [`bootSpatial` and its related JS APIs](../js-api/bootSpatial.md).

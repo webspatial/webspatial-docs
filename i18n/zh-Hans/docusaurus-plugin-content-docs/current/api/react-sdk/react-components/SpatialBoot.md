@@ -1,13 +1,13 @@
 ---
 sidebar_position: 4
-description: '加载 SDK 的空间化实现，并在就绪后渲染空间内容。'
+description: '在应用中开启 WebSpatial：加载 SDK 的空间能力，就绪后展示空间内容。'
 ---
 
 # `<SpatialBoot>`
 
 ## 概述 {#summary}
 
-`<SpatialBoot>` 用于在运行时启用 [WebSpatial API](../../../introduction/getting-started.md#webspatial-api)。用它包裹应用中使用 WebSpatial 的部分——通常是应用根节点，作为 [SDK 基础配置](../../../introduction/getting-started.md#step-2-spatial-boot)的一部分：
+应用要使用任何 WebSpatial 功能之前，SDK 都需要先加载它的空间能力——也就是真正让窗口、HTML 元素和 3D 内容"空间化"的那部分代码。`<SpatialBoot>` 会自动帮你完成这件事：只需要用它包裹应用中使用 WebSpatial 的部分——通常就是应用根节点，如 [Getting Started](../../../introduction/getting-started.md#step-2-spatial-boot) 所示——就可以了。
 
 ```jsx
 import { SpatialBoot } from "@webspatial/react-sdk";
@@ -21,11 +21,15 @@ function AppRoot() {
 }
 ```
 
-- 在 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime) 中，它会按需加载 SDK 的空间化实现，并在加载成功后渲染 `children`。
-- 在普通浏览器中，它会在挂载后直接渲染 `children`，并且完全不会请求空间化实现，因此网站原有的行为和性能不受影响。
+它帮你做了什么：
 
-:::note[从旧版 SDK 升级]
-请始终从包的根入口 `@webspatial/react-sdk` 导入 WebSpatial API。旧版的深层导入路径（如 `@webspatial/react-sdk/web` 和 `@webspatial/react-sdk/default`）已被移除，旧版的 `SSRProvider` 组件也已被 `<SpatialBoot>` 取代。
+- 在空间计算平台上（也就是在 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime) 中），它会在后台加载空间能力，一切就绪后再展示你的内容。
+- 在普通浏览器中，它会直接展示你的内容，完全跳过加载——访问者不会下载任何多余的空间代码，网站保持原来的速度和行为。
+
+换句话说，你不需要自己写任何平台判断逻辑。加一次 `<SpatialBoot>`，同一份代码就能在所有平台上正常工作。
+
+:::note[从旧版 SDK 升级？]
+现在所有 API 都从同一个入口导入：`@webspatial/react-sdk`。如果你的代码还在使用旧的深层导入路径（`@webspatial/react-sdk/web`、`@webspatial/react-sdk/default`）或旧的 `SSRProvider` 组件，请更新它们——这些都已不存在，`SSRProvider` 由 `<SpatialBoot>` 取代。
 :::
 
 ## 属性 {#props}
@@ -38,15 +42,16 @@ type SpatialBootProps = {
 };
 ```
 
-- `children`：在空间化实现就绪后要渲染的内容。
-- `onReady`：加载成功后调用一次。
-- `onError`：加载失败时调用，参数是 [`WebSpatialBootError`](../js-api/bootSpatial.md#webspatialbooterror)。
+- `children`：空间能力就绪后要展示的内容。
+- `onReady`：加载成功时调用一次。
+- `onError`：加载失败时调用，参数是一个描述失败原因的 [`WebSpatialBootError`](../js-api/bootSpatial.md#webspatialbooterror)。
 
 ## 行为 {#behavior}
 
-- `<SpatialBoot>` 在挂载后开始加载，加载完成前渲染 `null`——包括在服务端渲染的输出中。
-- 如果加载失败，它会调用 `onError`，并保持 `children` 不被挂载。
-- 它没有 `fallback` 属性。加载中或出错时的 UI 应放在 `<SpatialBoot>` 外部：
+使用前有两点值得了解：
+
+1. **`<SpatialBoot>` 内部的内容要等加载完成后才会出现。** 空间能力加载期间——包括在服务端渲染的输出中——它不展示任何内容。如果加载失败，内容会保持隐藏，并调用 `onError`。
+2. **它故意不提供 `fallback` 属性。** 需要始终可见的内容，比如加载指示或错误提示，应该放在 `<SpatialBoot>` 的*外部*：
 
 ```jsx
 import { useState } from "react";
@@ -68,10 +73,10 @@ function SpatialPanel() {
 }
 ```
 
-:::tip[SSR 项目]
-在启用 SSR 的项目中，应把 `<SpatialBoot>` 挂载在客户端渲染的代码里，并把必须由服务端渲染的内容放在它外部。参见[如何在启用 SSR 的项目中启用 WebSpatial](../../../how-to/ssr.md)。
+:::tip[项目用了 SSR？]
+在启用 SSR 的项目中，请把 `<SpatialBoot>` 放在客户端渲染的代码里，并把必须出现在服务端渲染 HTML 中的内容放在它外部。参见[如何在启用 SSR 的项目中启用 WebSpatial](../../../how-to/ssr.md)。
 :::
 
-:::tip[手动控制]
-如果想不通过包装组件来加载空间化实现，或者想在 JS 代码中观察空间化就绪状态，可以使用 [`bootSpatial` 及相关 JS API](../js-api/bootSpatial.md)。
+:::tip[想直接用 JavaScript 控制？]
+如果你想自己控制加载过程——比如在首次渲染前就完成加载——可以使用 [`bootSpatial` 及相关 JS API](../js-api/bootSpatial.md)。
 :::

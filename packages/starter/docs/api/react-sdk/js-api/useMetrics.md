@@ -16,9 +16,9 @@ If the [Spatial Scene container](../../../concepts/spatial-scenes.md) is of type
 The conversion ratio also differs across spatial computing platforms, so this API should be used consistently for unit conversion.
 
 > [!NOTE]
-> **Requires the spatial implementation**
+> **Real values arrive after loading**
 >
-> `useMetrics` returns a stable placeholder until the spatial implementation has finished loading. Mount components that need real metrics inside [`<SpatialBoot>`](../react-components/SpatialBoot.md), so they render only after loading succeeds.
+> Until the spatial capabilities of the SDK finish loading, `useMetrics` returns fixed placeholder values. To get real values, put components that use it inside [`<SpatialBoot>`](../react-components/SpatialBoot.md) — they will then render only after loading succeeds.
 
 ## Signature
 

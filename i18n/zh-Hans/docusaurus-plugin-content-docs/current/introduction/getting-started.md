@@ -131,7 +131,7 @@ npm install -D @webspatial/platform-visionos
 
 ### 步骤 2：Spatial Boot {#step-2-spatial-boot}
 
-用 React SDK 提供的 [`<SpatialBoot>` 组件](../api/react-sdk/react-components/SpatialBoot.md)包裹应用：
+接下来，用 React SDK 提供的 [`<SpatialBoot>` 组件](../api/react-sdk/react-components/SpatialBoot.md)包裹应用：
 
 ```jsx title="main.jsx" {2,5-7}
 import { createRoot } from "react-dom/client";
@@ -144,10 +144,10 @@ createRoot(document.getElementById("root")).render(
 );
 ```
 
-在 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 中，`<SpatialBoot>` 会加载 SDK 的空间化实现，然后在 [WebSpatial API](#webspatial-api) 启用的状态下渲染应用。在普通浏览器中，它会直接渲染应用，完全不会请求空间化实现，因此网站原有的行为和性能不受影响。
+这一层包裹就是在合适的时机"打开" WebSpatial 的开关。在空间计算平台上（也就是在 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 中），它会加载 SDK 的空间能力，然后在 [WebSpatial API](#webspatial-api) 启用的状态下展示应用。在普通浏览器中，它会直接展示应用并完全跳过加载，网站保持原来的速度和行为。
 
 :::tip[SSR 项目]
-对于开启 SSR 的项目，需要把 `<SpatialBoot>` 挂载在客户端渲染的代码里。参见[如何在启用 SSR 的项目中启用 WebSpatial](../how-to/ssr.md)。
+对于开启 SSR 的项目，`<SpatialBoot>` 必须放在客户端渲染的代码里。参见[如何在启用 SSR 的项目中启用 WebSpatial](../how-to/ssr.md)。
 :::
 
 ### 步骤 3：满足 PWA 的最低要求 {#step-3-minimal-pwa}

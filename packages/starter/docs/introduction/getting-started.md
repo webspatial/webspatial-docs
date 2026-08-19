@@ -178,7 +178,7 @@ For TypeScript React projects, you only need to configure the [`jsxImportSource`
 
 ### Step 2: Spatial Boot
 
-Wrap the app with the [`<SpatialBoot>` component](../api/react-sdk/react-components/SpatialBoot.md) provided by the React SDK:
+Next, wrap the app with the [`<SpatialBoot>` component](../api/react-sdk/react-components/SpatialBoot.md) provided by the React SDK:
 
 **main.jsx**
 
@@ -193,12 +193,12 @@ createRoot(document.getElementById("root")).render(
 );
 ```
 
-In a [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime), `<SpatialBoot>` loads the spatial implementation of the SDK, then renders the app with the [WebSpatial API](#webspatial-api) enabled. In ordinary browsers, it renders the app directly and never requests the spatial implementation, so the website's original behavior and performance are unaffected.
+This one wrapper is what switches WebSpatial on at the right moment. On spatial computing platforms (in a [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime)), it loads the spatial capabilities of the SDK and then shows the app with the [WebSpatial API](#webspatial-api) enabled. In ordinary browsers, it just shows the app and skips the loading entirely, so the website stays exactly as fast as before.
 
 > [!TIP]
 > **SSR projects**
 >
-> For projects with SSR enabled, mount `<SpatialBoot>` in client-rendered code. See [How to enable WebSpatial in SSR-enabled projects](../how-to/ssr.md).
+> For projects with SSR enabled, `<SpatialBoot>` must live in client-rendered code. See [How to enable WebSpatial in SSR-enabled projects](../how-to/ssr.md).
 
 ### Step 3: Minimal PWA
 

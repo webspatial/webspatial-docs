@@ -1,15 +1,15 @@
 ---
 sidebar_position: 4
-description: '手动加载空间化实现，并在 JS 代码中观察空间化就绪状态。'
+description: '用纯 JavaScript 自行控制空间能力的加载过程。'
 ---
 
 # `bootSpatial`
 
 ## 概述 {#summary}
 
-加载 SDK 的空间化实现，与 [`<SpatialBoot>` 组件](../react-components/SpatialBoot.md)自动完成的工作相同。
+[`<SpatialBoot>` 组件](../react-components/SpatialBoot.md)自动完成的所有工作，也都能通过纯 JavaScript 函数来完成。
 
-大多数应用应该使用 `<SpatialBoot>`。只有在需要完全手动控制时才使用本页的 JS API，例如在纯客户端渲染的应用中，在首次渲染前等待加载完成。
+大多数应用并不需要它们——用 `<SpatialBoot>` 包裹应用就足够了。本页的 API 只面向少数想自己控制加载过程的场景，比如在纯客户端渲染的应用里，在首次渲染*之前*就完成加载。
 
 ## 调用形式 {#signature}
 
@@ -17,14 +17,14 @@ description: '手动加载空间化实现，并在 JS 代码中观察空间化�
 function bootSpatial(): Promise<void>
 ```
 
-行为：
+调用它时会发生什么：
 
-- 在普通浏览器和服务端渲染过程中，会立即 resolve，并且不会请求空间化实现。
-- 在 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime) 中，会动态加载空间化实现。
-- 并发调用会共享同一次进行中的加载，加载成功的结果会在页面生命周期内缓存。
-- 加载失败时会以 [`WebSpatialBootError`](#webspatialbooterror) reject。失败后再次调用 `bootSpatial()` 会发起新的加载。
+- 在普通浏览器和服务端渲染过程中，它会立即 resolve——不会下载任何东西，也不会改变任何行为。
+- 在空间计算平台上（也就是在 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime) 中），它会下载并初始化 SDK 的空间能力。
+- 多次调用是安全的：并发调用会共享同一次加载；加载成功后，结果会在页面的整个生命周期内复用。
+- 如果加载失败，Promise 会以 [`WebSpatialBootError`](#webspatialbooterror) reject。再次调用 `bootSpatial()` 就是重试。
 
-示例——在纯客户端渲染的应用中，在首次渲染前手动加载：
+示例——在纯客户端渲染的应用中，在首次渲染前完成加载：
 
 ```jsx title="main.jsx"
 import ReactDOM from "react-dom/client";
@@ -40,8 +40,8 @@ try {
 }
 ```
 
-:::caution[不适用于 SSR]
-不要把手动加载作为启用 SSR 的项目的默认模式。SSR 项目应在客户端渲染的代码中挂载 [`<SpatialBoot>`](../react-components/SpatialBoot.md)。参见[如何在启用 SSR 的项目中启用 WebSpatial](../../../how-to/ssr.md)。
+:::caution[不适用于 SSR 项目]
+在启用 SSR 的项目中，不要把这种手动模式当作默认做法，而应在客户端渲染的代码里挂载 [`<SpatialBoot>`](../react-components/SpatialBoot.md)。参见[如何在启用 SSR 的项目中启用 WebSpatial](../../../how-to/ssr.md)。
 :::
 
 ## 相关 API {#related-apis}
@@ -52,7 +52,7 @@ try {
 function isSpatialReady(): boolean
 ```
 
-仅当空间化实现已在当前页面加载成功时返回 `true`。
+告诉你当前页面的空间能力是否已经加载完成。
 
 ### `useSpatialReady`
 
@@ -60,7 +60,7 @@ function isSpatialReady(): boolean
 function useSpatialReady(): boolean
 ```
 
-React Hook，会在空间化就绪状态变化时触发组件重新渲染。在服务端渲染和普通浏览器中返回 `false`。
+`isSpatialReady` 的 React Hook 版本：当答案发生变化时，组件会自动重新渲染。它在服务端渲染和普通浏览器中始终返回 `false`，所以也可以用来只在空间平台上展示某些内容：
 
 ```jsx
 import { Model, useSpatialReady } from "@webspatial/react-sdk";
@@ -84,7 +84,7 @@ function onSpatialLoadError(
 ): () => void
 ```
 
-注册空间化实现加载失败的监听器。返回的函数用于取消监听。
+让你在加载失败时收到通知——适合用来做错误上报。调用返回的函数即可停止监听。
 
 ```js
 import { onSpatialLoadError } from "@webspatial/react-sdk";
@@ -98,10 +98,10 @@ unsubscribe();
 
 ### `WebSpatialBootError`
 
-加载失败时使用的错误类型。
+加载失败时你会收到的错误对象：
 
 | 字段 | 说明 |
 | --- | --- |
 | `name` | 恒为 `'WebSpatialBootError'` |
-| `cause` | 原始的加载错误 |
-| `attempt` | 从 1 开始计数的加载尝试次数 |
+| `cause` | 导致失败的原始错误 |
+| `attempt` | 第几次加载失败，从 1 开始计数 |
