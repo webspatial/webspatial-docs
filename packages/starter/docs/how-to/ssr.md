@@ -1,58 +1,51 @@
 <!--
 sidebar_position: 4
-description: 'Enable WebSpatial in SSR projects by wrapping the app with SSRProvider and preserving the client-runtime split.'
+description: 'Use WebSpatial in SSR projects: mount SpatialBoot on the client and keep server-rendered content outside it.'
 -->
 
 # How to enable WebSpatial in SSR-enabled projects
 
-In a React project with SSR enabled, there is one extra step when [integrating WebSpatial SDK](../introduction/getting-started.md#set-up-your-project): add the `SSRProvider` from the SDK.
+Good news: WebSpatial SDK supports SSR out of the box. [Integrating it](../introduction/getting-started.md#set-up-your-project) works the same way as in any other React project — no extra provider and no special configuration.
+
+There is just one thing to keep in mind about *where* to put [`<SpatialBoot>`](../api/react-sdk/react-components/SpatialBoot.md): mount it in client-rendered code, and keep content that must appear in server-rendered HTML — for example, content search engines should see — outside it.
 
 > [!IMPORTANT]
-> **Why this wrapper exists**
+> **Why this works**
 >
-> `SSRProvider` gives the SDK the extra context it needs to bridge server rendering and client hydration correctly.
+> During server rendering and in ordinary browsers, WebSpatial components render as normal HTML elements, so nothing breaks. `<SpatialBoot>` loads the spatial capabilities only on the client, in a [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime), and shows nothing until loading finishes — which is why anything placed inside it is not part of the server-rendered HTML.
 
-## Generic React
+## Next.js
 
-**client-entry.js**
+Put `<SpatialBoot>` inside a [client component](https://nextjs.org/docs/app/getting-started/server-and-client-components):
 
-```js
-import { hydrateRoot } from "react-dom/client";
-import { SSRProvider } from "@webspatial/react-sdk";
+**spatial-product-view.jsx**
 
-hydrateRoot(
-  document.getElementById("root"),
-  <SSRProvider>
-    <App />
-  </SSRProvider>,
-);
-```
+```jsx
+"use client";
 
-## Hydrogen
+import { SpatialBoot, Model } from "@webspatial/react-sdk";
 
-**entry.client.jsx**
-
-```js
-import { HydratedRouter } from "react-router/dom";
-import { startTransition, StrictMode } from "react";
-import { hydrateRoot } from "react-dom/client";
-import { NonceProvider } from "@shopify/hydrogen";
-import { SSRProvider } from "@webspatial/react-sdk";
-
-if (!window.location.origin.includes("webcache.googleusercontent.com")) {
-  startTransition(() => {
-    const existingNonce = document.querySelector("script[nonce]")?.nonce;
-
-    hydrateRoot(
-      document,
-      <StrictMode>
-        <NonceProvider value={existingNonce}>
-          <SSRProvider>
-            <HydratedRouter />
-          </SSRProvider>
-        </NonceProvider>
-      </StrictMode>,
-    );
-  });
+export function SpatialProductView() {
+  return (
+    <SpatialBoot>
+      <Model enable-xr style={{ height: "200px" }}>
+        <source src="/models/product.glb" type="model/gltf-binary" />
+      </Model>
+    </SpatialBoot>
+  );
 }
 ```
+
+## Other SSR frameworks
+
+The rule is the same for other SSR frameworks such as Remix or Hydrogen: wrap the spatial part of the UI with `<SpatialBoot>` inside a normal component. That content appears on the client after hydration, once the spatial capabilities are ready.
+
+> [!TIP]
+> **Need different HTML per platform?**
+>
+> The SDK does not detect spatial platforms on the server. If your server must return different markup for spatial devices, check the incoming request yourself — for example, via the [User-Agent](../api/react-sdk/dom-api/userAgent.md).
+
+> [!NOTE]
+> **Upgrading from SSRProvider**
+>
+> If your project still wraps the app with `SSRProvider` from an earlier SDK version, remove it — it no longer exists. Wrap the spatial content with `<SpatialBoot>` instead.

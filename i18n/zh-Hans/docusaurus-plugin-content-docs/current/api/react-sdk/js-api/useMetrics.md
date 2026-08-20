@@ -15,6 +15,10 @@ description: '在 WebSpatial 布局中完成 2D 像素单位和真实世界米�
 
 不同空间计算平台上的换算关系也不一致，所以应该统一通过这个 API 来转换单位。
 
+:::caution[只能在 WebSpatial 环境中使用]
+`useMetrics` 只能在 WebSpatial 环境中、且 SDK 的空间能力加载完成之后调用——在其他环境中调用会抛出异常导致应用崩溃。请把调用它的组件放在 [`<SpatialBoot>`](../react-components/SpatialBoot.md) 内部，并且只在空间平台上渲染这些组件，例如借助[运行时检测](../dom-api/userAgent.md)。
+:::
+
 ## 调用形式 {#signature}
 
 ```js

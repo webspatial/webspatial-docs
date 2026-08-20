@@ -8,7 +8,8 @@ Use the local docs under `../.webspatial/docs/` as the source of truth. Do not r
 - Runtime packages: [Installation -> Step 1: Runtime SDK](../.webspatial/docs/introduction/getting-started.md#step-1-runtime-sdk)
 - Optional packaged-app tooling: [Installation -> Step 2 (Optional): Builder](../.webspatial/docs/introduction/getting-started.md#step-2-optional-builder)
 - JSX runtime integration: [Set Up Your Project -> Step 1: JSX Runtime](../.webspatial/docs/introduction/getting-started.md#step-1-jsx-runtime)
-- Minimum PWA requirements: [Set Up Your Project -> Step 2: Minimal PWA](../.webspatial/docs/introduction/getting-started.md#step-2-minimal-pwa) and [../.webspatial/docs/how-to/minimal-pwa.md](../.webspatial/docs/how-to/minimal-pwa.md)
+- Spatial boot integration: [Set Up Your Project -> Step 2: Spatial Boot](../.webspatial/docs/introduction/getting-started.md#step-2-spatial-boot)
+- Minimum PWA requirements: [Set Up Your Project -> Step 3: Minimal PWA](../.webspatial/docs/introduction/getting-started.md#step-3-minimal-pwa) and [../.webspatial/docs/how-to/minimal-pwa.md](../.webspatial/docs/how-to/minimal-pwa.md)
 
 ## Variant Docs
 
@@ -49,7 +50,8 @@ Read these only when the project shape requires them:
 - If the project is TypeScript and not on Rspack/Rsbuild, start from the `jsxImportSource` setup in Getting Started.
 - If the project is JavaScript-only, use the non-TypeScript guide. If that guide does not cover the active build tool, infer the equivalent JSX runtime hook from the tool's existing JSX transform configuration.
 - If the project uses Rspack or Rsbuild, follow the Rspack guide instead of forcing a `tsconfig`-only solution.
-- If the project uses SSR, add `SSRProvider` at the client hydration boundary shown by the local framework, not necessarily the exact file names from the docs.
+- Mount `<SpatialBoot>` around the app root or the spatial part of the UI, following the Getting Started setup and the SSR guide when the project uses SSR.
+- If the project uses SSR, mount `<SpatialBoot>` in client-rendered code at the client boundary shown by the local framework, not necessarily the exact file names from the docs. `SSRProvider` no longer exists; remove it if found.
 - If there are multiple possible config files, edit the one the current scripts and imports actually use.
 - If a safe equivalent integration point does not exist, stop and report the exact blocker instead of fabricating an unsupported configuration.
 
@@ -57,6 +59,7 @@ Read these only when the project shape requires them:
 
 - Confirm the dependency declarations are present.
 - Confirm the JSX runtime wiring is present in the active config path.
+- Confirm `<SpatialBoot>` is mounted in client-rendered code around the app or the spatial UI.
 - Confirm the manifest link exists and the manifest has the minimum required fields.
 - Run the project's smallest relevant verification command when available, preferably typecheck or build.
 - In the final summary, cite the local doc files you followed so the user can audit the changes quickly.
