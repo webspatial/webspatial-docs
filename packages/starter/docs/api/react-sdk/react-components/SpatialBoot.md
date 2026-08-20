@@ -44,8 +44,8 @@ type SpatialBootProps = {
 ```
 
 - `children`: the content to show once the spatial capabilities are ready.
-- `onReady`: called once, when loading has succeeded.
-- `onError`: called if loading fails, with a [`WebSpatialBootError`](../js-api/bootSpatial.md#webspatialbooterror) describing what went wrong.
+- `onReady`: called when loading succeeds. During development it can fire more than once (for example under React `StrictMode`), so keep the callback idempotent.
+- `onError`: called if loading fails, with a `WebSpatialBootError` describing what went wrong — a regular `Error` whose `cause` holds the original failure.
 
 ## Behavior
 
@@ -59,14 +59,15 @@ import { useState } from "react";
 import { SpatialBoot } from "@webspatial/react-sdk";
 
 function SpatialPanel() {
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState(null);
 
   if (error) return <FallbackPanel />;
 
   return (
     <>
-      <LoadingShell />
-      <SpatialBoot onError={setError}>
+      {!ready && <LoadingShell />}
+      <SpatialBoot onReady={() => setReady(true)} onError={setError}>
         <SpatialExperience />
       </SpatialBoot>
     </>
@@ -78,8 +79,3 @@ function SpatialPanel() {
 > **Using SSR?**
 >
 > In SSR-enabled projects, put `<SpatialBoot>` in client-rendered code, and keep content that must appear in server-rendered HTML outside it. See [How to enable WebSpatial in SSR-enabled projects](../../../how-to/ssr.md).
-
-> [!TIP]
-> **Prefer plain JavaScript?**
->
-> If you'd rather control the loading yourself — for example, finish it before the very first render — use [`bootSpatial` and its related JS APIs](../js-api/bootSpatial.md).

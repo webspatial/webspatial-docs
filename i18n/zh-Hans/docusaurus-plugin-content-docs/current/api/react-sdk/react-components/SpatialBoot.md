@@ -43,8 +43,8 @@ type SpatialBootProps = {
 ```
 
 - `children`：空间能力就绪后要展示的内容。
-- `onReady`：加载成功时调用一次。
-- `onError`：加载失败时调用，参数是一个描述失败原因的 [`WebSpatialBootError`](../js-api/bootSpatial.md#webspatialbooterror)。
+- `onReady`：加载成功时调用。在开发环境下它可能被调用不止一次（例如在 React `StrictMode` 下），所以回调要保持幂等。
+- `onError`：加载失败时调用，参数是一个描述失败原因的 `WebSpatialBootError`——它是普通的 `Error`，原始错误保存在 `cause` 里。
 
 ## 行为 {#behavior}
 
@@ -58,14 +58,15 @@ import { useState } from "react";
 import { SpatialBoot } from "@webspatial/react-sdk";
 
 function SpatialPanel() {
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState(null);
 
   if (error) return <FallbackPanel />;
 
   return (
     <>
-      <LoadingShell />
-      <SpatialBoot onError={setError}>
+      {!ready && <LoadingShell />}
+      <SpatialBoot onReady={() => setReady(true)} onError={setError}>
         <SpatialExperience />
       </SpatialBoot>
     </>
@@ -75,8 +76,4 @@ function SpatialPanel() {
 
 :::tip[项目用了 SSR？]
 在启用 SSR 的项目中，请把 `<SpatialBoot>` 放在客户端渲染的代码里，并把必须出现在服务端渲染 HTML 中的内容放在它外部。参见[如何在启用 SSR 的项目中启用 WebSpatial](../../../how-to/ssr.md)。
-:::
-
-:::tip[想直接用 JavaScript 控制？]
-如果你想自己控制加载过程——比如在首次渲染前就完成加载——可以使用 [`bootSpatial` 及相关 JS API](../js-api/bootSpatial.md)。
 :::
