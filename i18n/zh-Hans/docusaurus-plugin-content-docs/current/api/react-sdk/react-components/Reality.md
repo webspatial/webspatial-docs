@@ -90,16 +90,22 @@ import {
 
 ```js
 <Entity
-  // Position: x (left/right), y (down/up), z (away/toward)
+  // Position: x (left/right), y (down/up), z (away/toward), in meters
   position={{ x: 0.1, y: -0.2, z: 0.3 }}
 
-  // Rotation: radians (Math.PI = 180°)
-  rotation={{ x: 0, y: Math.PI / 2, z: 0 }}  // 90° on Y-axis
+  // Rotation: Euler angles in degrees (not radians)
+  rotation={{ x: 0, y: 90, z: 0 }}  // quarter turn about the Y axis
 
   // Scale: 1 = normal, 2 = double, 0.5 = half
   scale={{ x: 1, y: 2, z: 1 }}  // stretched vertically
   >
 ```
+
+| 属性 | 取值 | 单位 | 默认值 | 含义 |
+| --- | --- | --- | --- | --- |
+| `position` | `{ x, y, z }` | 米（`m`） | `{ x: 0, y: 0, z: 0 }` | Entity 原点的偏移量 |
+| `rotation` | `{ x, y, z }` | 度（`deg`） | `{ x: 0, y: 0, z: 0 }` | 绕 Entity 自身 X、Y、Z 轴的欧拉角 |
+| `scale` | `{ x, y, z }` | 比例 | `{ x: 1, y: 1, z: 1 }` | 各轴向的缩放倍数 |
 
 Transform 属性默认使用 `<Reality>` 对应的 2D 面片前方局部 3D 空间的坐标系，原点是这个空间的中心点。采用右手坐标系，Y 轴朝上，Z 轴朝向用户，长度单位默认用面向现实世界物体的物理单位（`m`）。
 
@@ -109,7 +115,29 @@ Transform 属性默认使用 `<Reality>` 对应的 2D 面片前方局部 3D 空�
 
 对于 `<World>` 顶层的 Entity 节点，Transform 属性中 `position` 的值是相对于坐标系原点的，对于其他作为子节点的 Entity，Transform 属性中 `position` 的值是相对于父 Entity 的 `position`。
 
-WebSpatial SDK 目前提供的[开箱即用的 Entity](../../../concepts/3d-content-containers.md#3d-engine-api) 有以下几类：
+WebSpatial SDK 目前提供的[开箱即用的 Entity](../../../concepts/3d-content-containers.md#3d-engine-api) 分为四类：[基础实体](#base-entity)、[几何实体](#primitive-entities)、[模型实体](#model-entity)和[附着实体](#attachment-entity)。
+
+### 旋转轴 {#rotation-axes}
+
+`rotation` 不是「一个轴加一个角度」的写法。它的每个字段都是一个独立的欧拉角，分别绕 Entity 自身对应的局部坐标轴旋转：
+
+| 字段 | 轴 | 正值的旋转效果 |
+| --- | --- | --- |
+| `rotation.x` | 局部 X 轴（指向右） | 让 Entity 的顶部朝用户方向倾斜 |
+| `rotation.y` | 局部 Y 轴（指向上） | 让 Entity 的正面转向右侧 |
+| `rotation.z` | 局部 Z 轴（指向用户） | 让 Entity 在用户视角下逆时针旋转 |
+
+这张表背后的规则：
+
+- **单位是度，不是弧度。** `90` 表示四分之一圈。SDK 不会做弧度换算，所以 `Math.PI / 2` 会被当成约 `1.57` 度，看上去几乎没有旋转。
+- **方向遵循右手定则。** 对每个轴来说，正值表示从该轴正方向朝原点看过去时的逆时针旋转。
+- **顺序是固定的。** 三个角按 `Rz * Ry * Rx` 组合：绕 Entity 自身坐标轴先应用 X，再应用 Y，最后应用 Z。因此同时设置多个字段时结果不满足交换律，`{ x: 90, y: 90, z: 0 }` 和 `{ x: 0, y: 90, z: 90 }` 得到的朝向并不相同。
+- **旋转中心是 Entity 自身的原点**，既不是容器中心，也不是包围盒的某个角。所有[几何实体](#primitive-entities)都以该原点为中心生成，所以只设置 `rotation` 的几何实体会原地自转。
+- **旋转会被继承。** 子 Entity 的变换会与父 Entity 的变换相乘，所以旋转父级 `<Entity>` 会让它的子节点绕父级原点公转。
+
+:::caution[单位是度，不是弧度]
+这里很容易被当成弧度，本页的早期版本也曾这样描述。SDK 实际传给渲染器的是度，与 CSS 的 `rotateX()` / `rotateY()` / `rotateZ()` 一致。如果代码里已经写了弧度数值，请按 `deg = rad * 180 / Math.PI` 换算。
+:::
 
 ### 基础实体 {#base-entity}
 
@@ -128,20 +156,17 @@ WebSpatial SDK 目前提供的[开箱即用的 Entity](../../../concepts/3d-cont
 
 ### 几何实体 {#primitive-entities}
 
-几何实体（primitive）包括以下几何形状，它们各自有不同的额外属性：
+几何实体（primitive）是内置的几何形状。除了每个 Entity 都支持的 [Transform 属性](#3d-entity)，它们各自还有描述形状的属性。
 
-- `<Box>`
-  - 属性：`width`,`height`,`depth`, `cornerRadius`
-- `<Plane>`
-  - 属性：`width`,`height`, `cornerRadius`
-- `<Sphere>`
-  - 属性：`radius`
-- `<Cone>`
-  - 属性：`height`, `radius`
-- `<Cylinder>`
-  - 属性：`height`, `radius`
+| 组件 | 必填的形状属性 | 可选的形状属性 |
+| --- | --- | --- |
+| `<Box>` | `width`、`height`、`depth` | `cornerRadius`、`splitFaces` |
+| `<Plane>` | `width`、`height` | `cornerRadius` |
+| `<Sphere>` | `radius` | — |
+| `<Cone>` | `radius`、`height` | — |
+| `<Cylinder>` | `radius`、`height` | — |
 
-示例：
+所有形状属性的长度单位都是米，与 `position` 一致。
 
 ```js
 <Box
@@ -151,6 +176,39 @@ WebSpatial SDK 目前提供的[开箱即用的 Entity](../../../concepts/3d-cont
   cornerRadius={0.01} // rounded edges
 />
 ```
+
+#### 必填属性必须提供 {#required-props-are-required}
+
+TypeScript 类型把所有形状属性都标成了可选，但网格是由原生渲染器创建的，缺少必填属性时会被拒绝。漏掉其中一个，几何创建就会失败并抛出类似 `missing required fields for ConeGeometry: radius, height` 的错误，该 Entity 什么都不会渲染。这些属性没有隐式默认尺寸。
+
+```js
+<Cone radius={0.1} height={0.2} />  // 正常渲染
+<Cone radius={0.1} />               // 失败：缺少 height，什么都不会渲染
+```
+
+`cornerRadius` 和 `splitFaces` 才是真正可选的，默认值分别是 `0` 和 `false`。`cornerRadius` 应保持在 `0` 到它所圆角化的最小边长的一半之间，超出这个范围没有意义。
+
+修改任何形状属性都会重建网格，修改 Transform 属性则不会。所以需要连续动画时，请修改 `position` / `rotation` / `scale`，而不是形状属性。
+
+#### 局部坐标轴对齐 {#local-axis-alignment}
+
+每个几何实体都以 Entity 自身的原点为中心生成，因此 `rotation` 会让它原地自转。形状属性对应哪个轴、旋转之前形状朝向哪个方向，都是固定的：
+
+| 组件 | 旋转前的坐标轴对齐 |
+| --- | --- |
+| `<Box>` | `width` 沿局部 X 轴，`height` 沿局部 Y 轴，`depth` 沿局部 Z 轴 |
+| `<Plane>` | 平铺在局部 XY 平面上，正面朝向 +Z；`width` 沿 X 轴，`height` 沿 Y 轴。它是单面片，并且启用了背面剔除，所以从背面看不见 |
+| `<Sphere>` | 各向同性；除非使用了贴图，否则 `rotation` 没有可见效果 |
+| `<Cone>` | 中心轴沿局部 Y 轴，顶点朝向 +Y，圆形底面朝向 -Y；`radius` 在局部 XZ 平面上测量 |
+| `<Cylinder>` | 中心轴沿局部 Y 轴，两个端面分别朝向 ±Y；`radius` 在局部 XZ 平面上测量 |
+
+也就是说，`<Cone>` 和 `<Cylinder>` 默认是竖直站立的。想让它横躺，就绕 X 轴或 Z 轴转四分之一圈：
+
+```js
+<Cylinder radius={0.05} height={0.4} rotation={{ x: 0, y: 0, z: 90 }} />
+```
+
+#### 材质 {#materials}
 
 这些几何实体都支持 `materials` 属性，可以引用[预先声明的材质](#3d-assets)。
 
@@ -169,6 +227,11 @@ WebSpatial SDK 目前提供的[开箱即用的 Entity](../../../concepts/3d-cont
   </World>
 </Reality>
 ```
+
+使用 `materials` 有两个前提：
+
+- 数组里的每个 id 都必须由同一个 `<Reality>` 中、位于 `<World>` 外的顶层 `<Material>` 声明。只有全部被引用的 id 都解析完成后，网格才会被挂载，所以引用一个从未声明过的 id 会让该 Entity 一直等待，什么都不渲染。
+- 几何实体只有一个材质槽，因此只有数组的第一项会生效。`<Box>` 是例外：设置 `splitFaces={true}` 后，立方体的每个面各占一个材质槽，`materials` 最多可以传 6 项，分别对应 6 个面。
 
 ### 模型实体 {#model-entity}
 
@@ -226,14 +289,15 @@ const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 useEffect(() => {
   let id;
   function animate() {
-    setRotation(prev => ({ ...prev, y: prev.y + 0.02 }));
+    // Degrees per frame: 1 deg at 60fps is one full turn every 6 seconds.
+    setRotation(prev => ({ ...prev, y: (prev.y + 1) % 360 }));
     id = requestAnimationFrame(animate);
   }
   animate();
   return () => cancelAnimationFrame(id);
 }, []);
 
-<Box rotation={rotation} />;
+<Box width={0.2} height={0.2} depth={0.2} rotation={rotation} />;
 ```
 
 ## 附着实体 {#attachment-entity}
