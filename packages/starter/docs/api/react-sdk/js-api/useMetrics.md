@@ -16,9 +16,39 @@ If the [Spatial Scene container](../../../concepts/spatial-scenes.md) is of type
 The conversion ratio also differs across spatial computing platforms, so this API should be used consistently for unit conversion.
 
 > [!CAUTION]
-> **Only works in a WebSpatial environment**
+> **Conversion only works in a WebSpatial Runtime**
 >
-> `useMetrics` can only be called after the spatial capabilities of the SDK have finished loading in a WebSpatial environment — calling it anywhere else throws an error and crashes the app. Put components that call it inside [`<SpatialBoot>`](../react-components/SpatialBoot.md), and render them only on spatial platforms, for example with [runtime detection](../dom-api/userAgent.md).
+> Calling `useMetrics()` itself is always safe — in ordinary browsers, during SSR, and before the SDK has finished loading it returns placeholder functions. It is the returned `pointToPhysical` / `physicalToPoint` that throw a `WebSpatialRuntimeError` when called in any of those situations. See [Runtime Requirements](#runtime-requirements).
+
+## Runtime Requirements
+
+`useMetrics` follows the [readiness vs. feature support](../react-components/SpatialBoot.md#readiness-vs-feature-support) model. Two conditions must both hold before you call the conversion functions:
+
+1. **The SDK is ready.** Mount the component that calls `useMetrics()` inside [`<SpatialBoot>`](../react-components/SpatialBoot.md). The hook picks its implementation once, when the component mounts: a component that mounted before boot completed keeps the placeholder functions for its whole lifetime, even after boot finishes, until it is remounted.
+2. **The runtime supports unit conversion.** `<SpatialBoot>` also mounts its children in ordinary browsers, where there is nothing to convert, so being inside `<SpatialBoot>` is not enough on its own. Check `WebSpatialRuntime.supports("useMetrics")` and render fallback UI when it returns `false`.
+
+When either condition fails, `useMetrics()` still returns an object, but `pointToPhysical` and `physicalToPoint` throw a `WebSpatialRuntimeError` (with `capability` set to `"useMetrics"`) as soon as they are called. The two function references are stable across renders, so they are safe to list in dependency arrays.
+
+The recommended guard, for a component rendered inside `<SpatialBoot>`:
+
+```jsx
+import { useMetrics, WebSpatialRuntime } from "@webspatial/react-sdk";
+
+function PhysicalWidth({ px }) {
+  if (!WebSpatialRuntime.supports("useMetrics")) {
+    // Ordinary browsers, or a WebSpatial Runtime without unit conversion.
+    return <span>{px}px</span>;
+  }
+  return <PhysicalWidthSpatial px={px} />;
+}
+
+function PhysicalWidthSpatial({ px }) {
+  const { pointToPhysical } = useMetrics();
+  return <span>{pointToPhysical(px).toFixed(2)} m</span>;
+}
+```
+
+Keep the `useMetrics()` call in a component that only renders when the feature is supported, as above. That way the hook order stays stable and the placeholder functions are never called.
 
 ## Signature
 

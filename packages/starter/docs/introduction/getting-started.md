@@ -31,7 +31,7 @@ WebSpatial is a set of [minimal extensions to HTML/CSS/DOM APIs](https://tpac202
 1. **Forward-looking pre-implementation**: Together with a [native runtime implementation](../concepts/webspatial-app.md#webspatial-runtime), the proposed HTML/DOM/CSS APIs are [polyfilled (or "prollyfilled")](https://www.w3.org/2001/tag/doc/polyfills/) within the JSX, refs, and CSS of React projects. This makes the [WebSpatial API](#webspatial-api) available immediately, without waiting for browser engines on each platform to formally support these APIs.
 2. **Cross-version compatibility**: The SDK shields developers from instability, changes, and platform differences while WebSpatial APIs enter Web standards (HTML/CSS/DOM). The APIs exposed by the SDK remain backward compatible, so older code keeps working.
 3. **Cross-platform compatibility**: On platforms that support [spatial computing and unified rendering](../concepts/spatial-computing.md), platform differences are hidden as much as possible so apps get unified spatial app concepts and spatialized UI features. On platforms that do not support spatial computing and unified rendering, the SDK will automatically ignore WebSpatial APIs, skip loading the full SDK implementation, and avoid affecting the behavior or performance of webpages in ordinary browsers on desktop computers, phones, and other screen-based devices.
-4. **Custom cross-platform logic**: The SDK provides feature detection and [runtime detection](../api/react-sdk/dom-api/userAgent.md), so developers can add custom cross-platform handling for the small number of JS API / DOM API calls that can't be ignored automatically, and enable custom enhancements and platform-specific features on spatial computing platforms.
+4. **Custom cross-platform logic**: The SDK provides [feature detection](../api/react-sdk/react-components/SpatialBoot.md#readiness-vs-feature-support) and [runtime detection](../api/react-sdk/dom-api/userAgent.md), so developers can add custom cross-platform handling for the small number of JS API / DOM API calls that can't be ignored automatically, and enable custom enhancements and platform-specific features on spatial computing platforms.
 5. **App packaging**: A PWA can be packaged as a [native app bundle with its own WebSpatial Runtime and no external dependency](../concepts/webspatial-app.md#packaged-webspatial-app), such as a visionOS app. Like a native app, it can be installed on simulators or real devices for [preview and debugging](#preview), and [submitted to app stores such as the visionOS App Store](#distribution).
 
 ## Philosophy
@@ -194,6 +194,22 @@ createRoot(document.getElementById("root")).render(
 ```
 
 This one wrapper is what switches WebSpatial on at the right moment. On spatial computing platforms (in a [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime)), it loads the spatial capabilities of the SDK and then shows the app with the [WebSpatial API](#webspatial-api) enabled. In ordinary browsers, it just shows the app and skips the loading entirely, so the website stays exactly as fast as before.
+
+Most WebSpatial APIs need nothing more than this: in ordinary browsers, and in WebSpatial Runtimes that lack a particular feature, they fall back on their own. For the few JS APIs that cannot (such as [`useMetrics`](../api/react-sdk/js-api/useMetrics.md)), and wherever you want to show different UI when a spatial feature is unavailable, add a feature check with `WebSpatialRuntime.supports()` inside the `<SpatialBoot>` subtree:
+
+```jsx
+import { WebSpatialRuntime } from "@webspatial/react-sdk";
+
+// Rendered inside <SpatialBoot>, so the SDK is ready by the time this runs.
+function ProductPreview() {
+  if (!WebSpatialRuntime.supports("Reality")) {
+    return <ProductImage />; // ordinary browsers, or a runtime without this feature
+  }
+  return <ProductScene3D />; // a WebSpatial Runtime that supports it
+}
+```
+
+`<SpatialBoot>` tells you when the SDK is ready to use; `WebSpatialRuntime.supports()` tells you whether a specific feature is available. Runtime-specific code needs both. See [Readiness vs. feature support](../api/react-sdk/react-components/SpatialBoot.md#readiness-vs-feature-support) for the full model.
 
 > [!TIP]
 > **SSR projects**
