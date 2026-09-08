@@ -18,6 +18,7 @@ export const webspatialProjectGuidance = `
    - Note that some APIs have been folded into certain docs as second-level headings.
 4. The docs define intended usage: recommended public APIs, supported usage patterns, examples, configuration, migration guidance, and compatibility guidance.
    - They describe the WebSpatial release they were written for. They do not prove that an API exists in the SDK version this project has installed.
+   - Compatibility guidance lives in \`.webspatial/docs/introduction/runtime-compatibility.md\`: the recommended \`@webspatial/*\` version set, the \`WebSpatialRuntime.supports()\` feature-detection API, how visionOS and PICO OS 6 runtimes differ, and what happens when SDK and runtime versions do not match. Read it before choosing package versions or relying on a runtime-dependent feature.
 
 ### Source Of Truth Hierarchy
 
@@ -38,8 +39,11 @@ Runtime detection                 -> What will work in the active environment?
   2. the installed package version (\`package.json\`, the lockfile, and \`node_modules/@webspatial/<pkg>/package.json\`)
   3. compatibility and version guidance in local docs
   - An API that is documented but absent from the installed package is unavailable to this project.
-- For runtime feature availability, use the documented runtime detection: \`navigator.userAgent\` per \`.webspatial/docs/api/react-sdk/dom-api/userAgent.md\`, and \`<SpatialBoot>\` readiness (\`onReady\` / \`onError\`) per \`.webspatial/docs/api/react-sdk/react-components/SpatialBoot.md\`.
-  - "The API exists in the installed SDK" does not mean "the active runtime supports it". Code that typechecks is not evidence that it works at runtime.
+- For runtime feature availability, use the documented runtime detection, each for its own question:
+  - Does the active runtime support a specific feature? \`WebSpatialRuntime.supports(name, tokens?)\` from \`@webspatial/react-sdk\`, per \`.webspatial/docs/introduction/runtime-compatibility.md\`. It returns \`false\` in plain browsers, during SSR, for unknown keys, and for capabilities the detected runtime lacks.
+  - Which runtime is the page running in? \`navigator.userAgent\` per \`.webspatial/docs/api/react-sdk/dom-api/userAgent.md\`.
+  - Has the spatial implementation finished loading? \`<SpatialBoot>\` readiness (\`onReady\` / \`onError\`) per \`.webspatial/docs/api/react-sdk/react-components/SpatialBoot.md\`. A \`true\` result from \`supports()\` does not mean the spatial implementation is loaded yet.
+  - "The API exists in the installed SDK" does not mean "the active runtime supports it". Code that typechecks is not evidence that it works at runtime, and a documented API is not guaranteed to be supported by every WebSpatial Runtime.
 
 ### Sources To Avoid
 
@@ -78,12 +82,13 @@ Runtime detection                 -> What will work in the active environment?
   - Do not treat it as a recommended public API by default. Determine whether it is public but undocumented, experimental, deprecated, internal, or newly added.
   - Prefer documented APIs. If using it is necessary, state that the local docs are incomplete for it instead of treating package source as canonical.
 - Installed SDK exposes an API the active runtime may not support:
-  - Use the documented runtime detection and \`<SpatialBoot>\` readiness instead of assuming support. Do not conclude that an API works because TypeScript accepts it.
+  - Gate the feature with \`WebSpatialRuntime.supports()\` and \`<SpatialBoot>\` readiness instead of assuming support, and render or do something sensible when \`supports()\` returns \`false\`. Do not conclude that an API works because TypeScript accepts it.
   - Mention the runtime dependency in the final summary when it affects the user's target platforms.
 
 ### Dependency Changes
 
 - Do not change WebSpatial SDK versions just because the local docs describe a newer API.
-- Before changing any \`@webspatial/*\` dependency: inspect the currently installed version, confirm the user's task actually requires the upgrade, check the compatibility guidance in local docs, and otherwise preserve the project's existing version.
+- Before changing any \`@webspatial/*\` dependency: inspect the currently installed version, confirm the user's task actually requires the upgrade, check \`.webspatial/docs/introduction/runtime-compatibility.md\`, and otherwise preserve the project's existing version.
+- When \`@webspatial/*\` packages are installed or upgraded, keep \`@webspatial/react-sdk\`, \`@webspatial/core-sdk\`, and any \`@webspatial/builder\` and \`@webspatial/platform-visionos\` at the same version, as the compatibility guidance recommends.
 - Do not use \`"latest"\` as a generic fix for compatibility problems. When an upgrade is warranted, pin an explicit version and tell the user what changed and why.
 `;

@@ -6,7 +6,10 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Introduction',
       collapsed: false,
-      items: [{type: 'doc', id: 'introduction/getting-started'}],
+      items: [
+        {type: 'doc', id: 'introduction/getting-started'},
+        {type: 'doc', id: 'introduction/runtime-compatibility'},
+      ],
     },
     {
       type: 'category',

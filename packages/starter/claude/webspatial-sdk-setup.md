@@ -12,6 +12,7 @@ Use the local docs under `../.webspatial/docs/` as the source of truth for inten
 - Minimum PWA requirements: [Set Up Your Project -> Step 3: Minimal PWA](../.webspatial/docs/introduction/getting-started.md#step-3-minimal-pwa) and [../.webspatial/docs/how-to/minimal-pwa.md](../.webspatial/docs/how-to/minimal-pwa.md)
 - Runtime detection: [../.webspatial/docs/api/react-sdk/dom-api/userAgent.md](../.webspatial/docs/api/react-sdk/dom-api/userAgent.md)
 - Spatial boot readiness and errors: [../.webspatial/docs/api/react-sdk/react-components/SpatialBoot.md](../.webspatial/docs/api/react-sdk/react-components/SpatialBoot.md)
+- SDK and runtime version compatibility, and runtime feature detection with `WebSpatialRuntime.supports()`: [../.webspatial/docs/introduction/runtime-compatibility.md](../.webspatial/docs/introduction/runtime-compatibility.md)
 
 ## Variant Docs
 
@@ -29,7 +30,7 @@ Three separate questions, three separate sources:
 
 - What should developers use? The local docs: recommended public APIs, usage patterns, configuration, migration, and compatibility guidance.
 - What can this project import? The installed package version and its public exports and `.d.ts` typings. An API that is documented but absent from the installed package is unavailable to this project.
-- What will work in the active environment? Documented runtime detection (`navigator.userAgent`) and `<SpatialBoot>` readiness. An API that exists in the installed SDK is not proof that the runtime supports it.
+- What will work in the active environment? Documented runtime detection: `WebSpatialRuntime.supports(name, tokens?)` from `@webspatial/react-sdk` for whether the active runtime supports a specific feature, `navigator.userAgent` for which runtime the page is in, and `<SpatialBoot>` readiness for whether the spatial implementation has loaded. An API that exists in the installed SDK is not proof that the runtime supports it, and not every documented API is supported by every WebSpatial Runtime.
 
 Precedence for usage and semantics: local docs, then the installed package's public typings and exports, then SDK source only to clarify behavior. Precedence for availability: installed exports and typings, then installed version, then the docs' compatibility guidance. Never use SDK source to introduce undocumented or internal APIs.
 
@@ -56,7 +57,8 @@ Precedence for usage and semantics: local docs, then the installed package's pub
 - Treat the installed package's public exports and typings as canonical for what this project can import. Do not use APIs that the installed version does not export, even when the local docs describe them.
 - Version mismatch: if the docs describe an API the installed SDK does not expose, do not write it, do not substitute an internal or deep-imported API, and do not upgrade silently. Report the mismatch and either use the documented API the installed version supports or recommend an explicit upgrade when the task requires the newer API.
 - If the project already depends on `@webspatial/*` packages, keep the installed versions unless the task requires an upgrade. Do not use `latest` as a generic fix for compatibility problems.
-- Always install both `@webspatial/react-sdk` and `@webspatial/core-sdk` when enabling the runtime SDK.
+- Always install both `@webspatial/react-sdk` and `@webspatial/core-sdk` when enabling the runtime SDK, at the same version. Keep any `@webspatial/builder` and `@webspatial/platform-visionos` packages at that same version, per the runtime compatibility doc.
+- Do not assume every API in the local docs is supported by every WebSpatial Runtime. When the task adds a runtime-dependent feature, gate it with `WebSpatialRuntime.supports()` as described in the runtime compatibility doc, and keep the documented fallback behavior in mind. Use `navigator.userAgent` to identify the runtime, not to infer support for individual features.
 - Installing `@webspatial/core-sdk` as a dependency is allowed when the local docs require it, but do not import WebSpatial APIs from it directly unless the local docs explicitly tell you to.
 - Import only from documented entrypoints that appear in the package's public exports. Do not deep-import internal source files or implementation-only types.
 - Do not present experimental entrypoints (for example `@webspatial/react-sdk/experimental`) as stable API. Use them only when the user explicitly asks for the experimental feature, and keep the experimental label in code and explanations.

@@ -86,6 +86,10 @@ WebSpatial SDK 最新版本暂时有 bug，导致暂时不支持 styled-componen
 npm install @webspatial/react-sdk @webspatial/core-sdk
 ```
 
+:::tip[检查 SDK 与 Runtime 的兼容性]
+`@webspatial/react-sdk` 和 `@webspatial/core-sdk` 请安装相同版本，升级时也要同步升级。并不是每个 Runtime 都支持 SDK 导出的全部 API。推荐的版本组合，以及用于判断当前 Runtime 是否支持某个功能的 `WebSpatialRuntime.supports()` API，见 [Runtime 兼容性](./runtime-compatibility.md)。
+:::
+
 ### 步骤 2（可选）：Builder {#step-2-optional-builder}
 
 对于没有内置 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 的空间计算平台，需要把网站打包成[自带 WebSpatial Runtime 的原生应用](../concepts/webspatial-app.md#packaged-webspatial-app)，因此还需要以下安装步骤：

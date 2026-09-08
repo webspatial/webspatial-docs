@@ -68,6 +68,12 @@ test("prepareAiResources syncs the bundled WebSpatial AI resources into the targ
   );
 
   assert.match(copiedDoc, /# Getting Started/);
+  const copiedCompatibilityDoc = await fs.readFile(
+    path.join(docsAction.outputDir, "introduction", "runtime-compatibility.md"),
+    "utf8"
+  );
+
+  assert.match(copiedCompatibilityDoc, /WebSpatialRuntime\.supports\(/);
   const copiedSkill = await fs.readFile(
     path.join(skillsAction.outputDir, "webspatial-sdk-setup", "SKILL.md"),
     "utf8"
@@ -76,6 +82,8 @@ test("prepareAiResources syncs the bundled WebSpatial AI resources into the targ
   assert.match(copiedSkill, /do not import WebSpatial APIs from it directly/i);
   assert.match(copiedSkill, /installed package's public exports and typings/);
   assert.match(copiedSkill, /Version mismatch/);
+  assert.match(copiedSkill, /\.\.\/\.\.\/\.\.\/\.webspatial\/docs\/introduction\/runtime-compatibility\.md/);
+  assert.match(copiedSkill, /WebSpatialRuntime\.supports\(/);
   const agentsContent = await fs.readFile(path.join(projectDir, "AGENTS.md"), "utf8");
   assert.match(agentsContent, /Documentation Priority/);
   assert.match(agentsContent, /Source Of Truth Hierarchy/);
@@ -83,6 +91,8 @@ test("prepareAiResources syncs the bundled WebSpatial AI resources into the targ
   assert.doesNotMatch(agentsContent, /always wins/);
   assert.match(agentsContent, /\.webspatial\/docs\/introduction\/getting-started\.md/);
   assert.match(agentsContent, /Installing it as a dependency when the local docs require it is allowed/);
+  assert.match(agentsContent, /\.webspatial\/docs\/introduction\/runtime-compatibility\.md/);
+  assert.match(agentsContent, /WebSpatialRuntime\.supports\(/);
   const copiedClaudeMemory = await fs.readFile(
     path.join(projectDir, ".claude", "webspatial-sdk-setup.md"),
     "utf8"
@@ -90,9 +100,13 @@ test("prepareAiResources syncs the bundled WebSpatial AI resources into the targ
   assert.match(copiedClaudeMemory, /Use the local docs under `\.\.\/\.webspatial\/docs\/`/);
   assert.match(copiedClaudeMemory, /do not import WebSpatial APIs from it directly/i);
   assert.match(copiedClaudeMemory, /installed package's public exports and typings/);
+  assert.match(copiedClaudeMemory, /\.\.\/\.webspatial\/docs\/introduction\/runtime-compatibility\.md/);
+  assert.doesNotMatch(copiedClaudeMemory, /\.\.\/\.\.\/\.\.\/\.webspatial/);
+  assert.match(copiedClaudeMemory, /WebSpatialRuntime\.supports\(/);
   const rootClaudeMemory = await fs.readFile(path.join(projectDir, "CLAUDE.md"), "utf8");
   assert.match(rootClaudeMemory, /Documentation Priority/);
   assert.match(rootClaudeMemory, /Source Of Truth Hierarchy/);
+  assert.match(rootClaudeMemory, /WebSpatialRuntime\.supports\(/);
   assert.doesNotMatch(rootClaudeMemory, /always wins/);
   assert.match(rootClaudeMemory, /@\.claude\/webspatial-sdk-setup\.md/);
   const excludeContent = await fs.readFile(path.join(projectDir, ".git", "info", "exclude"), "utf8");
