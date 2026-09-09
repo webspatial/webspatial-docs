@@ -93,8 +93,8 @@ import {
   // Position: x (left/right), y (down/up), z (away/toward)
   position={{ x: 0.1, y: -0.2, z: 0.3 }}
 
-  // Rotation: radians (Math.PI = 180°)
-  rotation={{ x: 0, y: Math.PI / 2, z: 0 }}  // 90° on Y-axis
+  // Rotation: degrees (360 = full turn)
+  rotation={{ x: 0, y: 90, z: 0 }}  // 90° on Y-axis
 
   // Scale: 1 = normal, 2 = double, 0.5 = half
   scale={{ x: 1, y: 2, z: 1 }}  // stretched vertically
@@ -217,8 +217,63 @@ function SpaceshipFleet() {
 }
 ```
 
-对于动画需求，可以用 JS 轮询修改 Transform 属性来实现。
-示例：
+`<ModelEntity>` 支持和其他 Entity 相同的 [Transform 属性](#3d-entity)，因此可以像几何实体一样被定位、旋转、缩放和[做动画](#animation)。它不提供模型文件内部自带动画的播放控制。要播放那种动画，请改用 [`<Model>`](./Model.md#animation-playback-api)。
+
+## 动画 {#animation}
+
+在 `<Reality>` 内部和周围，有三种不同的东西可以做动画。它们使用不同的 API，不能互相替代。
+
+| 我想做的事 | 用什么 |
+| --- | --- |
+| 播放 3D 模型文件内部自带的动画，例如 GLB 或 USDZ 文件中导出的骨骼动画或关键帧动画 | [`<Model>` 的播放 API](./Model.md#animation-playback-api)。当前版本的 `<ModelEntity>` 不提供内嵌动画的播放控制。 |
+| 让 `<Reality>` 内的 Entity 随时间移动、旋转或缩放 | [`useEntityAnimation()`](../js-api/useEntityAnimation.md) 搭配 Entity 的 `animation` 属性。实验性 API。 |
+| 用动画 API 覆盖不到的自定义逻辑驱动 Transform 属性，例如物理模拟、跟随手势、程序化运动 | 普通的 React state 更新，例如在 `requestAnimationFrame` 中更新。 |
+
+### Entity Transform 动画 {#entity-transform-animation}
+
+[`useEntityAnimation()`](../js-api/useEntityAnimation.md) 在 WebSpatial Runtime 的原生层为任意 Entity 的 `position`、`rotation`、`scale` 做动画。只需描述一次起点姿态、终点姿态、时长和缓动，运行时会逐帧插值，不需要重新渲染 React 组件。
+
+```jsx
+import { Reality, World, ModelAsset, ModelEntity } from "@webspatial/react-sdk";
+import { useEntityAnimation } from "@webspatial/react-sdk/experimental";
+
+function SpinningShip() {
+  const [animation, api, entityProps] = useEntityAnimation({
+    from: { rotation: { y: 0 } },
+    to: { rotation: { y: 360 } },
+    duration: 4,
+    timingFunction: "linear",
+    loop: true,
+  });
+
+  return (
+    <Reality style={{ width: "100%", height: "500px" }}>
+      <ModelAsset id="ship-blueprint" src="https://example.com/fighter-jet.usdz" />
+      <World>
+        <ModelEntity
+          model="ship-blueprint"
+          position={{ x: 0, y: 0, z: 0 }}
+          {...entityProps}
+          animation={animation}
+        />
+      </World>
+    </Reality>
+  );
+}
+```
+
+- 把返回的 `animation` 传给 Entity 的 `animation` 属性。一个 animation 只能绑定到一个 Entity。
+- 把 `entityProps` 展开在静态 Transform 属性之后，这样动画停止后 Entity 会停在最近确认的姿态上。
+- 用 `api.play()`、`api.pause()`、`api.stop()`、`api.reset()`、`api.finish()` 控制播放。
+- 动画在播放中、延迟中或暂停中时，运行时拥有这个 Entity 的完整 transform，会忽略普通的 Transform 属性更新。
+
+:::caution[实验性 API，运行环境支持情况不同]
+`useEntityAnimation` 从 `@webspatial/react-sdk/experimental` 导入，仍可能变化。运行环境的支持情况也不同：渲染调用这个 Hook 的组件之前，先用 `WebSpatialRuntime.supports("useEntityAnimation")` 检查；返回 `false` 时，用静态属性把 Entity 直接渲染在最终姿态上。完整 API、播放状态和限制见 [`useEntityAnimation`](../js-api/useEntityAnimation.md) 页面。
+:::
+
+### 自定义逐帧动画 {#custom-frame-by-frame-animation}
+
+对于动画 API 不提供的逻辑，例如响应手势、物理模拟、程序化运动，或者用同一个时钟驱动多个 Entity，仍然可以直接用 React 更新 Transform 属性。每次 state 更新都会向运行时发送一次新的 transform，因此要尽量减少每帧的工作量。
 
 ```js
 const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -226,7 +281,7 @@ const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 useEffect(() => {
   let id;
   function animate() {
-    setRotation(prev => ({ ...prev, y: prev.y + 0.02 }));
+    setRotation((prev) => ({ ...prev, y: prev.y + 1 })); // 每帧 1 度
     id = requestAnimationFrame(animate);
   }
   animate();
@@ -235,6 +290,12 @@ useEffect(() => {
 
 <Box rotation={rotation} />;
 ```
+
+不要在同一个 Entity 上把这种方式和正在播放的 `useEntityAnimation` 混用。只要运动可以用起点姿态、终点姿态和关键帧表达，就优先使用 `useEntityAnimation`。
+
+:::note[让容器本身动起来]
+Transform 属性和 `useEntityAnimation` 移动的是 `<Reality>` 3D 空间内部的内容。把 `<Reality>` 元素本身当作页面中的 2D 面片来做动画（和其他空间化 HTML 元素一样），是另一项实验性能力：`@webspatial/react-sdk/experimental` 中的 `useAnimation()` Hook，通过元素的 `xr-animation` 属性绑定，并由 `WebSpatialRuntime.supports("useAnimation")` 控制是否可用。
+:::
 
 ## 附着实体 {#attachment-entity}
 

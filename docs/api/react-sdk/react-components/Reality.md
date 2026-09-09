@@ -93,8 +93,8 @@ The following 3D asset declarations can appear among the top-level children of `
   // Position: x (left/right), y (down/up), z (away/toward)
   position={{ x: 0.1, y: -0.2, z: 0.3 }}
 
-  // Rotation: radians (Math.PI = 180°)
-  rotation={{ x: 0, y: Math.PI / 2, z: 0 }}  // 90° on Y-axis
+  // Rotation: degrees (360 = full turn)
+  rotation={{ x: 0, y: 90, z: 0 }}  // 90° on Y-axis
 
   // Scale: 1 = normal, 2 = double, 0.5 = half
   scale={{ x: 1, y: 2, z: 1 }}  // stretched vertically
@@ -217,8 +217,63 @@ function SpaceshipFleet() {
 }
 ```
 
-For animation requirements, you can implement them by polling and updating Transform props with JS.
-Example:
+`<ModelEntity>` supports the same [Transform props](#3d-entity) as every other Entity, so it can be positioned, rotated, scaled, and [animated](#animation) like a primitive. It does not expose playback controls for animation authored inside the model file. To play that kind of animation, use [`<Model>`](./Model.md#animation-playback-api) instead.
+
+## Animation
+
+Three different things can be animated in and around `<Reality>`. They use different APIs and are not interchangeable.
+
+| I want to... | Use |
+| --- | --- |
+| Play an animation authored inside a 3D model file, such as a skeletal or keyframe animation exported in a GLB or USDZ file | The [`<Model>` playback API](./Model.md#animation-playback-api). `<ModelEntity>` does not expose playback controls for embedded animation in the current version. |
+| Move, rotate, or scale an Entity inside `<Reality>` over time | [`useEntityAnimation()`](../js-api/useEntityAnimation.md) with the Entity's `animation` prop. Experimental. |
+| Drive Transform props with custom logic that the animation API does not cover, such as physics, gesture following, or procedural motion | Ordinary React state updates, for example from `requestAnimationFrame`. |
+
+### Entity Transform Animation
+
+[`useEntityAnimation()`](../js-api/useEntityAnimation.md) animates `position`, `rotation`, and `scale` of any Entity natively in the WebSpatial Runtime. Describe the start pose, end pose, duration, and easing once. The runtime interpolates every frame without re-rendering the React component.
+
+```jsx
+import { Reality, World, ModelAsset, ModelEntity } from "@webspatial/react-sdk";
+import { useEntityAnimation } from "@webspatial/react-sdk/experimental";
+
+function SpinningShip() {
+  const [animation, api, entityProps] = useEntityAnimation({
+    from: { rotation: { y: 0 } },
+    to: { rotation: { y: 360 } },
+    duration: 4,
+    timingFunction: "linear",
+    loop: true,
+  });
+
+  return (
+    <Reality style={{ width: "100%", height: "500px" }}>
+      <ModelAsset id="ship-blueprint" src="https://example.com/fighter-jet.usdz" />
+      <World>
+        <ModelEntity
+          model="ship-blueprint"
+          position={{ x: 0, y: 0, z: 0 }}
+          {...entityProps}
+          animation={animation}
+        />
+      </World>
+    </Reality>
+  );
+}
+```
+
+- Pass the returned `animation` to the Entity's `animation` prop. One animation binds to exactly one Entity.
+- Spread `entityProps` after the static Transform props so the Entity keeps its last confirmed pose after the animation stops.
+- Control playback with `api.play()`, `api.pause()`, `api.stop()`, `api.reset()`, and `api.finish()`.
+- While the animation is playing, delayed, or paused, the runtime owns the whole transform of that Entity and ignores ordinary Transform prop updates.
+
+:::caution[Experimental API with varying runtime support]
+`useEntityAnimation` is imported from `@webspatial/react-sdk/experimental` and may still change. Runtime support also varies: check `WebSpatialRuntime.supports("useEntityAnimation")` before rendering a component that calls the hook, and render the Entity at its final pose with static props when it returns `false`. See the [`useEntityAnimation`](../js-api/useEntityAnimation.md) page for the full API, playback states, and limitations.
+:::
+
+### Custom Frame-by-Frame Animation
+
+Direct React updates of Transform props remain available for logic the animation API does not provide: reacting to gestures, physics, procedural motion, or driving several Entities from one shared clock. Each state update sends a new transform to the runtime, so keep the per-frame work small.
 
 ```js
 const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -226,7 +281,7 @@ const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 useEffect(() => {
   let id;
   function animate() {
-    setRotation(prev => ({ ...prev, y: prev.y + 0.02 }));
+    setRotation((prev) => ({ ...prev, y: prev.y + 1 })); // degrees per frame
     id = requestAnimationFrame(animate);
   }
   animate();
@@ -235,6 +290,12 @@ useEffect(() => {
 
 <Box rotation={rotation} />;
 ```
+
+Do not combine this approach with an active `useEntityAnimation` on the same Entity. Prefer `useEntityAnimation` whenever the motion can be expressed as a start pose, an end pose, and keyframes.
+
+:::note[Animating the container itself]
+Transform props and `useEntityAnimation` move content inside the 3D space of `<Reality>`. Animating the `<Reality>` element itself as a 2D plane in the page, like any other spatialized HTML element, is a separate experimental capability: the `useAnimation()` hook from `@webspatial/react-sdk/experimental`, bound through the element's `xr-animation` prop and gated by `WebSpatialRuntime.supports("useAnimation")`.
+:::
 
 ## Attachment Entity
 

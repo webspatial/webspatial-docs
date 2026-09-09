@@ -6,7 +6,7 @@ description: '使用接近 Web 标准 `<model>` 的 API，在空间化容器中�
 # `<Model>`
 
 :::info[版本要求]
-本页记录的 API 需要 `@webspatial/react-sdk` `1.7.0` 或更高版本。
+本页记录的 API 需要 `@webspatial/react-sdk` `1.7.0` 或更高版本。各项播放功能是否可用还取决于 WebSpatial Runtime 的版本，见[运行环境支持](#runtime-support)。
 :::
 
 `<Model>` 组件实现了 WebSpatial API 中的[静态 3D 内容容器元素](../../../concepts/3d-content-containers.md)，这种元素兼容 Web 标准中的 `<model>` 元素的 API，同时对 web 标准中的能力做了增强，不仅让元素对应的 2D 面片具备了[空间化 HTML 元素的能力](../../../concepts/spatialized-html-elements.md)，也让 3D 模型能在这个 2D 面片前方的空间中渲染出有真实体积的 3D 内容。
@@ -24,7 +24,7 @@ function Example() {
   return (
     <Model
       enable-xr
-      autoplay
+      autoPlay
       loop
       style={{ height: "200px", "--xr-depth": "100px" }}
     >
@@ -83,13 +83,25 @@ function MyScene() {
 }
 ```
 
-### `autoplay` {#autoplay}
+### `autoPlay` {#autoplay}
 
-`autoplay` 会在模型文件加载完成并可渲染后，立刻自动播放模型文件内建的动画。
+`autoPlay` 是一个 Boolean 属性。为 `true` 时，模型文件加载完成并可渲染后，会立刻自动播放模型文件内部自带的第一段动画。对没有动画的模型文件没有效果。
+
+请使用 React 属性名 `autoPlay`。全小写的 `autoplay` 不会被 SDK 识别。
 
 ### `loop` {#loop}
 
-`loop` 会让模型文件内建的动画在播放到结尾后自动重新开始。
+`loop` 是一个 Boolean 属性。为 `true` 时，模型文件内部自带的动画播放到结尾后会自动重新开始。
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function LoopingRobot() {
+  return <Model src="/modelasset/robot.glb" autoPlay loop enable-xr />;
+}
+```
+
+`autoPlay` 和 `loop` 只控制模型文件内部自带动画的播放，不会移动、旋转或缩放模型。命令式的播放控制，以及它和「让模型的 transform 动起来」的区别，见 [Animation Playback API](#animation-playback-api)。
 
 ### `loading` {#loading}
 
@@ -141,7 +153,25 @@ function LongScrollPage() {
 
 ## JavaScript API {#javascript-api}
 
-下面这些 JavaScript API 可以通过指向 `<Model>` 元素的 React ref 访问。
+下面这些 JavaScript API 可以通过指向 `<Model>` 元素的 React ref 访问。在 TypeScript 中，可以用 `@webspatial/react-sdk` 导出的 `ModelRef` 作为 ref 的类型。
+
+```jsx
+import { useRef } from "react";
+import { Model } from "@webspatial/react-sdk";
+
+function ModelWithRef() {
+  const modelRef = useRef(null);
+
+  return (
+    <Model
+      ref={modelRef}
+      src="/modelasset/robot.glb"
+      enable-xr
+      onLoad={() => console.log(modelRef.current.currentSrc)}
+    />
+  );
+}
+```
 
 `currentSrc`
 
@@ -160,13 +190,19 @@ function LongScrollPage() {
 
 ### Animation Playback API {#animation-playback-api}
 
+这些 API 控制模型文件内部自带的动画，例如 GLB 或 USDZ 文件中导出的骨骼动画或关键帧动画。运行时会播放模型的第一段可用动画。如果文件中没有动画，`duration` 为 `0`，`play()` 不会产生可见效果。
+
+:::note[播放动画不等于移动模型]
+播放 API 改变的是模型随时间显示的内容，不会移动、旋转或缩放模型。要在容器内摆放模型，使用 `entityTransform`。要让模型的位置、旋转或缩放随时间变化，请把它作为 [`<ModelEntity>`](./Reality.md#model-entity) 渲染在 `<Reality>` 内，并使用 [`useEntityAnimation`](../js-api/useEntityAnimation.md)。完整说明见[动画](./Reality.md#animation)。
+:::
+
 `duration`
 
-只读 `double`，表示模型动画未经缩放的总时长，单位为秒。如果模型没有动画，值为 `0`。
+只读 `double`，表示模型动画未经缩放的总时长，单位为秒。如果模型没有动画，值为 `0`。这个值在模型加载完成后才可用，请在 [`onLoad`](#onload) 中或 `ready` resolve 之后读取。
 
 `currentTime`
 
-可读可写的 `double`，表示模型动画未经缩放的播放时间，单位为秒。它会被限制在动画总时长范围内，因此对于没有动画的模型，这个值始终为 `0`。
+可读可写的 `double`，表示模型动画未经缩放的播放时间，单位为秒。给它赋值即可跳转进度。它会被限制在动画总时长范围内，因此对于没有动画的模型，这个值始终为 `0`。
 
 `playbackRate`
 
@@ -174,7 +210,7 @@ function LongScrollPage() {
 
 `paused`
 
-只读 `Boolean`，表示模型动画当前是否处于暂停状态。
+只读 `Boolean`，表示模型动画当前是否处于暂停状态。开始播放之前为 `true`。
 
 `play()`
 
@@ -182,4 +218,68 @@ function LongScrollPage() {
 
 `pause()`
 
-尝试暂停模型动画的播放。如果模型已经处于暂停状态，这个方法不会产生额外效果。
+尝试暂停模型动画的播放。返回一个 `Promise`。如果模型已经处于暂停状态，这个方法不会产生额外效果。
+
+模型加载完成之前，各个 getter 返回默认值（`paused` 为 `true`，`duration` 和 `currentTime` 为 `0`，`playbackRate` 为 `1`），对 `currentTime` 和 `playbackRate` 的赋值会被忽略。
+
+#### 声明式播放 {#declarative-playback}
+
+对于「模型加载完成后立刻播放内嵌动画」这种最常见的需求，只需使用 [`autoPlay`](#autoplay) 和 [`loop`](#loop) 属性，不需要写 JavaScript：
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function IdleRobot() {
+  return <Model src="/modelasset/robot.glb" autoPlay loop enable-xr />;
+}
+```
+
+#### 命令式播放 {#imperative-playback}
+
+需要由用户控制播放、跳转进度或调整速度时，通过 ref 调用 API：
+
+```jsx
+import { useRef } from "react";
+import { Model } from "@webspatial/react-sdk";
+
+function RobotPlayer() {
+  const modelRef = useRef(null);
+
+  return (
+    <>
+      <Model
+        ref={modelRef}
+        src="/modelasset/robot.glb"
+        loop
+        enable-xr
+        style={{ height: "200px", "--xr-depth": "100px" }}
+        onLoad={() => console.log("duration:", modelRef.current.duration)}
+      />
+      <button onClick={() => modelRef.current.play()}>Play</button>
+      <button onClick={() => modelRef.current.pause()}>Pause</button>
+      <button onClick={() => (modelRef.current.currentTime = 2)}>
+        Seek to 2s
+      </button>
+      <button onClick={() => (modelRef.current.playbackRate = 0.5)}>
+        Half speed
+      </button>
+    </>
+  );
+}
+```
+
+#### 运行环境支持 {#runtime-support}
+
+播放功能是 WebSpatial Runtime 的能力，并非每个运行时版本都全部支持。在依赖这些功能之前，用 `WebSpatialRuntime.supports` 搭配 `Model` key 和功能名称做检查：
+
+```js
+import { WebSpatialRuntime } from "@webspatial/react-sdk";
+
+WebSpatialRuntime.supports("Model", ["autoplay", "loop"]);
+WebSpatialRuntime.supports("Model", ["play", "pause", "paused"]);
+WebSpatialRuntime.supports("Model", ["duration", "playbackRate", "currentTime"]);
+```
+
+可识别的功能名称包括 `autoplay`、`loop`、`play`、`pause`、`paused`、`duration`、`playbackRate` 和 `currentTime`。`autoPlay` 属性对应的功能名称是全小写的 `autoplay`。只有列出的功能全部支持时才返回 `true`，在普通浏览器中返回 `false`。
+
+当 `<Model>` [回退](#fallback)为标准 `<model>` 元素时，播放功能是否可用取决于浏览器对该元素的实现，而不是 WebSpatial。
