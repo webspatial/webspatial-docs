@@ -36,6 +36,10 @@ Web 标准中现有的 `opacity`、`display: none`、`visibility: hidden` 等 AP
 
 空间化 HTML 元素都支持新的[空间交互事件](./natural-interactions.md#spatial-interactions)，在事件结果中使用的[本地坐标系](./3d-content-containers.md#2d-containing-3d)，都是空间化 HTML 元素对应的 2D 面片的坐标系，以左上角为原点，单位也是 2D 布局系统中使用的 point 单位（`px`）。
 
-出于性能和复杂性方面的考虑，WebSpatial SDK 只支持在遵循 [Rules of React](https://react.dev/reference/rules) 的声明式代码中修改 CSS（比如在 JSX 中改变 `className` 或 `style`），如果想要通过 DOM API 查询当前状态，需要用 React 的 `useRef` 获取空间化 HTML 元素对应的 DOM 对象，不能用 `querySelector` 之类的非 React 方式直接查询 DOM 对象。
+空间化 HTML 元素的更新方式和普通 HTML 元素一样。用 React state 改变 `className` 或 `style`、切换 CSS class、修改 [`--xr-back`](../api/react-sdk/css-api/back.md) 之类的 CSS 自定义属性、通过 React ref 写入 `style` 或 `classList`，这些方式都是支持的。WebSpatial SDK 会自动检测元素自身尺寸的变化，以及元素自身和其后代元素上 `class`、`style` 的变化。
+
+如果空间化 HTML 元素外部的布局变化导致它在 X/Y 轴上移动、但自身尺寸没有变化，当前版本的 SDK 可能需要在父元素上添加可选的 [`enable-xr-monitor`](../api/react-sdk/react-components/jsx-marker.md#enable-xr-monitor) 标记才能检测到新位置。这只是针对该场景的兼容机制，不属于常规的编写方式。
+
+如果想要通过 DOM API 读取当前状态，需要用 React 的 `useRef` 获取空间化 HTML 元素对应的 DOM 对象。用 `querySelector` 之类的非 React 方式直接查询空间化 HTML 元素，不是受支持的方式。
 
 WebSpatial SDK 暂时还不支持把空间化 HTML 元素的 CSS 属性添加到 CSS 动画里，只支持 JS 动画的实现方式。
