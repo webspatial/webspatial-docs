@@ -16,6 +16,7 @@ Use the local docs under `../../../.webspatial/docs/` as the source of truth for
 - Spatial boot integration: [Set Up Your Project -> Step 2: Spatial Boot](../../../.webspatial/docs/introduction/getting-started.md#step-2-spatial-boot)
 - Minimum PWA requirements: [Set Up Your Project -> Step 3: Minimal PWA](../../../.webspatial/docs/introduction/getting-started.md#step-3-minimal-pwa) and [../../../.webspatial/docs/how-to/minimal-pwa.md](../../../.webspatial/docs/how-to/minimal-pwa.md)
 - Runtime detection: [../../../.webspatial/docs/api/react-sdk/dom-api/userAgent.md](../../../.webspatial/docs/api/react-sdk/dom-api/userAgent.md)
+- Spatial boot readiness and errors: [../../../.webspatial/docs/api/react-sdk/react-components/SpatialBoot.md](../../../.webspatial/docs/api/react-sdk/react-components/SpatialBoot.md)
 
 ## Variant Docs
 

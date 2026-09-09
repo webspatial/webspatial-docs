@@ -92,6 +92,8 @@ test("prepareAiResources syncs the bundled WebSpatial AI resources into the targ
   assert.match(copiedClaudeMemory, /installed package's public exports and typings/);
   const rootClaudeMemory = await fs.readFile(path.join(projectDir, "CLAUDE.md"), "utf8");
   assert.match(rootClaudeMemory, /Documentation Priority/);
+  assert.match(rootClaudeMemory, /Source Of Truth Hierarchy/);
+  assert.doesNotMatch(rootClaudeMemory, /always wins/);
   assert.match(rootClaudeMemory, /@\.claude\/webspatial-sdk-setup\.md/);
   const excludeContent = await fs.readFile(path.join(projectDir, ".git", "info", "exclude"), "utf8");
   assert.match(excludeContent, /\/\.webspatial\//);
