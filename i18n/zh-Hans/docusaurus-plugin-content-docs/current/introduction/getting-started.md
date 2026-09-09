@@ -31,7 +31,7 @@ WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.w
 1. **前瞻性预实现**：结合[原生 Runtime 实现](../concepts/webspatial-app.md#webspatial-runtime)，在 React 项目的 JSX、Ref、CSS 里[提前模拟实现拟议标准](https://www.w3.org/2001/tag/doc/polyfills/)中的 HTML/DOM/CSS API，让 [WebSpatial API](#webspatial-api) 现在就立即可用 ，不用等待各个平台上的浏览器引擎正式支持这些 API。
 2. **跨版本兼容**：屏蔽了 WebSpatial API 进入 Web 标准（HTML/CSS/DOM）过程中的不稳定、变动和平台差异，SDK 提供的 API 始终保持向后兼容，让旧代码一直可运行
 3. **跨平台兼容**：在支持[空间计算和统一渲染](../concepts/spatial-computing.md)的平台上，会尽量屏蔽差异，提供跨平台统一的空间应用概念和空间化 UI 特性。在不支持空间计算和统一渲染的平台上，会自动忽略 WebSpatial API、不加载完整的 SDK 实现，不影响网页在桌面电脑、手机等屏幕设备和普通浏览器里的效果和性能。
-4. **自定义跨平台逻辑**：提供特性检测和 [Runtime 检测](../api/react-sdk/dom-api/userAgent.md)方法，可以对少数无法自动忽略的 JS API / DOM API 调用做自定义的跨平台处理，也可以在空间计算平台上启用自定义的增强效果和专属功能。
+4. **自定义跨平台逻辑**：提供[特性检测](../api/react-sdk/react-components/SpatialBoot.md#readiness-vs-feature-support)和 [Runtime 检测](../api/react-sdk/dom-api/userAgent.md)方法，可以对少数无法自动忽略的 JS API / DOM API 调用做自定义的跨平台处理，也可以在空间计算平台上启用自定义的增强效果和专属功能。
 5. **应用打包**：支持把 PWA 打包成[自带 WebSpatial Runtime、无外部依赖](../concepts/webspatial-app.md#packaged-webspatial-app)的原生应用安装包（比如 visionOS 应用），跟原生应用一样能在模拟器或真机设备上安装和[运行调试](#preview)，能[上架到 visionOS App Store 这样的应用商店](#distribution)。
 
 ## 设计理念 {#philosophy}
@@ -145,6 +145,22 @@ createRoot(document.getElementById("root")).render(
 ```
 
 这一层包裹就是在合适的时机"打开" WebSpatial 的开关。在空间计算平台上（也就是在 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 中），它会加载 SDK 的空间能力，然后在 [WebSpatial API](#webspatial-api) 启用的状态下展示应用。在普通浏览器中，它会直接展示应用并完全跳过加载，网站保持原来的速度和行为。
+
+大多数 WebSpatial API 只需要这一步：在普通浏览器中，以及在缺少某个功能的 WebSpatial Runtime 中，它们会自行回退。对于少数无法自行回退的 JS API（例如 [`useMetrics`](../api/react-sdk/js-api/useMetrics.md)），以及任何你希望在空间功能不可用时展示不同 UI 的地方，请在 `<SpatialBoot>` 子树内部用 `WebSpatialRuntime.supports()` 加一层功能检查：
+
+```jsx
+import { WebSpatialRuntime } from "@webspatial/react-sdk";
+
+// Rendered inside <SpatialBoot>, so the SDK is ready by the time this runs.
+function ProductPreview() {
+  if (!WebSpatialRuntime.supports("Reality")) {
+    return <ProductImage />; // ordinary browsers, or a runtime without this feature
+  }
+  return <ProductScene3D />; // a WebSpatial Runtime that supports it
+}
+```
+
+`<SpatialBoot>` 告诉你 SDK 何时可以使用；`WebSpatialRuntime.supports()` 告诉你某个具体功能是否可用。依赖运行时的代码两者都需要。完整模型参见[就绪与功能支持](../api/react-sdk/react-components/SpatialBoot.md#readiness-vs-feature-support)。
 
 :::tip[SSR 项目]
 对于开启 SSR 的项目，`<SpatialBoot>` 必须放在客户端渲染的代码里。参见[如何在启用 SSR 的项目中启用 WebSpatial](../how-to/ssr.md)。
