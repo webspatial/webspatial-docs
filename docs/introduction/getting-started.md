@@ -86,6 +86,10 @@ To enable the [WebSpatial API](#webspatial-api) in a React project, install the 
 npm install @webspatial/react-sdk @webspatial/core-sdk
 ```
 
+:::tip[Check SDK and runtime compatibility]
+Install `@webspatial/react-sdk` and `@webspatial/core-sdk` at the same version, and keep them in sync when upgrading. Not every runtime supports every API the SDK exports. See [Runtime Compatibility](./runtime-compatibility.md) for the recommended version set and for `WebSpatialRuntime.supports()`, the API that tells you whether the current runtime supports a feature.
+:::
+
 ### Step 2 (Optional): Builder
 
 For spatial computing platforms that do not have a built-in [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime), the website must be packaged as a [native app that includes WebSpatial Runtime](../concepts/webspatial-app.md#packaged-webspatial-app). That requires these additional installation steps:
