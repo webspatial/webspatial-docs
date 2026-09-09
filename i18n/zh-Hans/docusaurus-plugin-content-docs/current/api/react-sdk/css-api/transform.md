@@ -73,15 +73,51 @@ transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
 
 但是跟 CSS Transform 一样，如果父层级的空间化 HTML 元素用了 Spatial Transform，作为子元素的空间化 HTML 元素再使用 Spatial Transform，会相对于自己跟随父元素一起被变换后的视觉位置，继续叠加自己的变换。
 
+## 更新 Transform {#updating-the-transform}
+
+Spatial Transform 就是普通的 CSS，修改方式和修改任何元素的 transform 一样。在[空间化 HTML 元素](../react-components/jsx-marker.md#enable-xr)上，以下方式都是支持的：
+
+用 React state 驱动内联 `style`：
+
+```jsx
+<div enable-xr style={{ transform: `translateZ(${offset}px)` }} />
+```
+
+通过 class 切换样式表里设置的 transform：
+
+```jsx
+<div enable-xr className={raised ? "card raised-card" : "card"} />
+```
+
+```css
+.raised-card {
+  transform: translateZ(100px);
+}
+```
+
+通过 React ref 直接写入：
+
+```js
+ref.current.style.transform = "translateZ(100px)";
+```
+
+通过 ref 切换 class（比如 `ref.current.classList.toggle("raised-card")`）也是同样的效果。
+
+一般的更新优先使用 React state 配合 `className` 或 `style`。当你已经持有 ref 时（比如在动画循环或手势处理函数里），通过 ref 写入是同样受支持的替代方式。两种方式都不需要额外的标记或通知。
+
+:::note[样式表选择器]
+请让 `transform` 规则直接匹配空间化 HTML 元素本身，比如通过它的 class、它自身的标签或内联 `style`。只能通过页面祖先元素才能匹配到该元素的规则（比如 `.sidebar .card { transform: ... }`）可能不会作为空间变换生效。
+:::
+
 ## 是否可动画化 {#animatable}
 
-在 WebSpatial SDK 当前的实现中，暂时不支持在 CSS 动画中使用 Spatial Transform 的属性。
+在 WebSpatial SDK 当前的实现中，暂时不支持在 CSS 动画和 CSS transition 中使用 Spatial Transform 的属性。
 
 :::caution[当前限制]
 空间化 HTML 元素整体目前都不支持 CSS 动画。
 :::
 
-Spatial Transform 支持 JS 动画的实现方式，可以对一个元素用 JS 反复修改 style 属性里 Spatial Transform 值。
+Spatial Transform 支持 JS 动画的实现方式，即用 JS 通过任意一种[受支持的更新方式](#updating-the-transform)反复修改 Spatial Transform 的值。每次写入都会立即生效，所以要让运动平滑，应每帧只更新一次，比如在 `requestAnimationFrame` 里更新，或使用会写入 `style` 的动画库。
 
 JSX API 示例：
 
@@ -89,6 +125,7 @@ JSX API 示例：
 export default function Demo({ animatedOffsetZ, animatedOffsetX }) {
   return (
     <div
+      enable-xr
       style={{
         transform: `translateZ(${animatedOffsetZ}) translateX(${animatedOffsetX})`,
       }}></div>

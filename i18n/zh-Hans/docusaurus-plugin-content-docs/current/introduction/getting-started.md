@@ -40,7 +40,7 @@ WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.w
 2. 只在 HTML/CSS/DOM API 里做最小化的扩展，在 [X/Y 轴相关的功能](../concepts/spatialized-html-elements.md)上沿用现有的 Web 标准 API，且能跟新扩展出的 [Z 轴相关 API](../api/react-sdk/css-api/back.md) 组合使用。
 3. 在 3D 局部空间中，避免像 WebXR 那样用底层 3D 图形 API 做[独立渲染](https://tpac2025.webspatial.dev/#webxr-not-enough)，而是通过[结合 ECS 和 HTML 的声明式 3D 引擎 API](../concepts/3d-content-containers.md#3d-engine-api)，让空间计算平台能理解这些 3D 内容，能把它们跟其他应用的内容一起在同一个空间做[统一渲染](../concepts/spatial-computing.md#unified-rendering)。
 4. 避免像 [WebXR session](https://developer.picoxr.com/document/web/introduce-webxr-standards/) 那样在单一网页的代码里实现一个[空间应用](../concepts/spatial-computing.md#spatial-app)的所有内容，而是保持多页网站、网页链接、PWA 等标准 Web 开发方式，通过 [Web App Manifest](../concepts/webspatial-app.md#web-app) 和[「在新窗口打开链接」](../concepts/spatial-scenes.md#new-scenes)来提供空间应用整体和[空间容器](../concepts/spatial-scenes.md)的能力。
-5. [SDK](#webspatial-sdk) 对拟议标准中 HTML/CSS/DOM API 的[模拟预实现](https://www.w3.org/2001/tag/doc/polyfills/)要适度，不能过于复杂和不可控，因此只在遵循 [Rules of React](https://react.dev/reference/rules) 的声明式代码中支持修改[空间化样式/状态](../concepts/spatialized-html-elements.md)和[监听空间事件](../concepts/natural-interactions.md#spatial-interactions)，只在通过 [Hook API](https://react.dev/reference/react/hooks) 获取的对象（比如 [Ref](https://react.dev/learn/referencing-values-with-refs)）上支持[读取空间化样式/状态（只读）](../concepts/spatialized-html-elements.md)，不支持[直接选择 DOM 对象](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)、用命令式代码做这些操作。
+5. [SDK](#webspatial-sdk) 对拟议标准中 HTML/CSS/DOM API 的[模拟预实现](https://www.w3.org/2001/tag/doc/polyfills/)要适度，不能过于复杂和不可控，因此 SDK 建立在普通的 React 和 DOM 行为之上，而不是另外引入一套操作空间化状态的方式：修改[空间化样式/状态](../concepts/spatialized-html-elements.md)用的就是你已经熟悉的 React 和 CSS 方式，比如由 state 驱动的 `className` 和 `style`、样式表规则，以及通过 [Ref](https://react.dev/learn/referencing-values-with-refs) 写入；[监听空间事件](../concepts/natural-interactions.md#spatial-interactions)在 JSX 中以声明式方式完成；[读取空间化样式/状态](../concepts/spatialized-html-elements.md)则在通过 [Hook API](https://react.dev/reference/react/hooks)（比如 Ref）获取的 DOM 对象上进行。用 `querySelector` 之类的方式在 React 之外直接选择 DOM 对象来做这些操作，不是受支持的方式。
 6. 让 [SDK](#webspatial-sdk) 能尽可能低成本、以[接近「一键安装」的方式](#installation)整合到现有的标准 Web 项目中，不改变项目[原有的开发流程、构建方式和部署方式](#preview)，确保这个网站在桌面/移动平台和普通浏览器里原有的效果、性能、调试都不受影响。
 7. 在 WebSpatial API 和 SDK 的支持下，Web 开发者做一个全新[空间应用](../concepts/spatial-computing.md#spatial-app)的方式应该跟开发普通网站一样。只要开发者愿意，这个应用仍然能作为一个标准网站来分发，保持 Web 原有的跨平台能力和[基于网址的用法](https://tpac2025.webspatial.dev/#instant-apps)。
 
@@ -162,6 +162,37 @@ createRoot(document.getElementById("root")).render(
 :::tip[已经是 PWA？]
 如果当前网站原本就是一个 PWA，可以作为 PWA 在 Chrome 里安装，就可以跳过这一步。
 :::
+
+### 步骤 4：空间化一个元素 {#step-4-spatialize-an-element}
+
+现在 WebSpatial API 已经可用了。给一个 HTML 元素加上 [`enable-xr` 标记](../api/react-sdk/react-components/jsx-marker.md#enable-xr)，把它转变成[空间化 HTML 元素](../concepts/spatialized-html-elements.md)，然后用普通的 React 和 CSS 方式为它设置样式、更新它：
+
+```jsx title="Card.jsx" {5}
+function Card({ raised }) {
+  return (
+    <div
+      enable-xr
+      className={raised ? "card card-raised" : "card"}
+    >
+      Hello
+    </div>
+  );
+}
+```
+
+```css title="Card.css"
+.card {
+  position: relative;
+  border-radius: 16px;
+  --xr-background-material: translucent;
+}
+
+.card-raised {
+  --xr-back: 50px;
+}
+```
+
+对于一般的应用来说，`enable-xr` 是唯一需要的标记。通过 React state、class、内联样式或 ref 修改这个元素，和修改其他任何元素的方式完全一样，SDK 会保持空间化元素同步。详情见 [JSX 标记](../api/react-sdk/react-components/jsx-marker.md)，其中也说明了针对一种特定布局场景的可选兼容性标记。
 
 ## 起始模板 {#boilerplate}
 

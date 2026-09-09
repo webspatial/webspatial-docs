@@ -36,6 +36,10 @@ The rest of the content inside a spatialized 2D HTML element is still ordinary 2
 
 All spatialized HTML elements support the new [spatial interaction events](./natural-interactions.md#spatial-interactions). The [local coordinate system](./3d-content-containers.md#2d-containing-3d) used in event results is the coordinate system of the 2D plane corresponding to the spatialized HTML element, with the origin at the top-left corner and the same point unit (`px`) used by the 2D layout system.
 
-For performance and complexity reasons, WebSpatial SDK only supports CSS updates in declarative code that follows the [Rules of React](https://react.dev/reference/rules), such as changing `className` or `style` in JSX. If you want to query the current state through DOM APIs, you need to use React's `useRef` to obtain the DOM object for the spatialized HTML element. Direct DOM queries through non-React approaches such as `querySelector` are not supported.
+Spatialized HTML elements are updated the same way as ordinary HTML elements. Changing `className` or `style` from React state, switching CSS classes, changing CSS custom properties such as [`--xr-back`](../api/react-sdk/css-api/back.md), and writing to `style` or `classList` through a React ref are all supported. WebSpatial SDK automatically picks up changes to the element's own size, and changes to `class` and `style` on the element and on its descendants.
+
+If a layout change outside a spatialized HTML element moves it on the X/Y axes without changing its size, the current SDK may need the optional [`enable-xr-monitor`](../api/react-sdk/react-components/jsx-marker.md#enable-xr-monitor) marker on a parent element to pick up the new position. This is a compatibility mechanism for that one scenario, not part of the normal authoring pattern.
+
+If you want to read the current state through DOM APIs, obtain the DOM object for the spatialized HTML element with React's `useRef`. Selecting spatialized HTML elements through non-React DOM queries such as `querySelector` is not a supported path.
 
 WebSpatial SDK does not currently support adding CSS properties of spatialized HTML elements into CSS animations. Only JS-based animation approaches are supported.

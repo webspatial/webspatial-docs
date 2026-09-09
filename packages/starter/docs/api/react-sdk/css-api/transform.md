@@ -73,16 +73,53 @@ Child elements do not inherit the `transform` property of their parent element.
 
 However, like CSS Transform, if a parent spatialized HTML element uses Spatial Transform, and a child spatialized HTML element also uses Spatial Transform, the child's transform is applied relative to its own visually transformed position after following the parent's transform.
 
+## Updating the Transform
+
+Spatial Transform is ordinary CSS, so you change it the same way you would change the transform of any element. All of the following are supported on a [spatialized HTML element](../react-components/jsx-marker.md#enable-xr):
+
+Inline `style` driven by React state:
+
+```jsx
+<div enable-xr style={{ transform: `translateZ(${offset}px)` }} />
+```
+
+A class whose stylesheet rule sets the transform:
+
+```jsx
+<div enable-xr className={raised ? "card raised-card" : "card"} />
+```
+
+```css
+.raised-card {
+  transform: translateZ(100px);
+}
+```
+
+Writing through a React ref:
+
+```js
+ref.current.style.transform = "translateZ(100px)";
+```
+
+Toggling classes through a ref, for example `ref.current.classList.toggle("raised-card")`, works the same way.
+
+Prefer React state with `className` or `style` for ordinary updates. Writing through a ref is a supported alternative when you already hold a ref, for example inside an animation loop or a gesture handler. No extra marker or notification is needed in either case.
+
+> [!NOTE]
+> **Stylesheet selectors**
+>
+> Write `transform` rules so that they match the spatialized HTML element itself, through its class, its own tag, or inline `style`. A rule that only matches the element through its page ancestors, such as `.sidebar .card { transform: ... }`, may not be applied as a spatial transform.
+
 ## Animatable
 
-In the current implementation of WebSpatial SDK, Spatial Transform properties are not yet supported inside CSS animations.
+In the current implementation of WebSpatial SDK, Spatial Transform properties are not yet supported inside CSS animations or CSS transitions.
 
 > [!CAUTION]
 > **Current limitation**
 >
 > Spatialized HTML elements as a whole do not currently support CSS animations.
 
-Spatial Transform does support JS-based animation approaches, where JS repeatedly updates the Spatial Transform value in an element's `style`.
+Spatial Transform does support JS-based animation, where JS repeatedly updates the Spatial Transform value with any of the [supported update methods](#updating-the-transform). Each update is applied as soon as it is written, so for smooth motion update the value once per frame, for example from `requestAnimationFrame` or from an animation library that writes to `style`.
 
 JSX API example:
 
@@ -90,6 +127,7 @@ JSX API example:
 export default function Demo({ animatedOffsetZ, animatedOffsetX }) {
   return (
     <div
+      enable-xr
       style={{
         transform: `translateZ(${animatedOffsetZ}) translateX(${animatedOffsetX})`,
       }}></div>

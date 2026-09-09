@@ -80,7 +80,7 @@ const flowSteps = [
 
 function App() {
   return (
-    <main className="scene-shell" enable-xr-monitor>
+    <main className="scene-shell">
       <div className="scene-guides" aria-hidden="true">
         <span className="guide guide-ring"></span>
         <span className="guide guide-axis"></span>

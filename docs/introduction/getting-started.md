@@ -40,7 +40,7 @@ WebSpatial is a set of [minimal extensions to HTML/CSS/DOM APIs](https://tpac202
 2. WebSpatial only makes minimal extensions to HTML/CSS/DOM APIs. For [X/Y-axis-related functionality](../concepts/spatialized-html-elements.md), it continues to use existing Web standard APIs, which can be combined with the newly added [Z-axis-related APIs](../api/react-sdk/css-api/back.md).
 3. Inside local 3D spaces, WebSpatial avoids doing [independent rendering](https://tpac2025.webspatial.dev/#webxr-not-enough) with low-level 3D graphics APIs as WebXR does. Instead, it uses a [declarative 3D engine API that combines ECS and HTML](../concepts/3d-content-containers.md#3d-engine-api), so spatial computing platforms can understand this 3D content and [render it together](../concepts/spatial-computing.md#unified-rendering) with content from other apps in the same space.
 4. WebSpatial avoids implementing all content for a [spatial app](../concepts/spatial-computing.md#spatial-app) inside a single webpage the way a [WebXR session](https://developer.picoxr.com/document/web/introduce-webxr-standards/) does. Instead, it preserves standard Web development patterns such as multi-page sites, hyperlinks, and PWAs, and uses the [Web App Manifest](../concepts/webspatial-app.md#web-app) and ["open links in a new window"](../concepts/spatial-scenes.md#new-scenes) to provide spatial app and [spatial container](../concepts/spatial-scenes.md) capabilities.
-5. The [SDK](#webspatial-sdk) should keep its [simulated pre-implementation](https://www.w3.org/2001/tag/doc/polyfills/) of the proposed HTML/CSS/DOM APIs moderate, not overly complex or uncontrollable. For that reason, modifying [spatial styles/state](../concepts/spatialized-html-elements.md) and [listening to spatial events](../concepts/natural-interactions.md#spatial-interactions) is only supported in declarative code that follows the [Rules of React](https://react.dev/reference/rules), and [reading spatial styles/state (read-only)](../concepts/spatialized-html-elements.md) is only supported on objects obtained through [Hook APIs](https://react.dev/reference/react/hooks), such as [Refs](https://react.dev/learn/referencing-values-with-refs). Directly selecting DOM objects with imperative code is not supported for these operations.
+5. The [SDK](#webspatial-sdk) should keep its [simulated pre-implementation](https://www.w3.org/2001/tag/doc/polyfills/) of the proposed HTML/CSS/DOM APIs moderate, not overly complex or uncontrollable. For that reason, the SDK builds on ordinary React and DOM behavior instead of introducing a separate way to work with spatial state: [spatial styles/state](../concepts/spatialized-html-elements.md) are changed with the same React and CSS patterns you already use, such as state-driven `className` and `style`, stylesheet rules, and writes through [Refs](https://react.dev/learn/referencing-values-with-refs); [spatial events](../concepts/natural-interactions.md#spatial-interactions) are listened to declaratively in JSX; and [reading spatial styles/state](../concepts/spatialized-html-elements.md) is done on DOM objects obtained through [Hook APIs](https://react.dev/reference/react/hooks) such as Refs. Selecting DOM objects outside React, for example with `querySelector`, is not a supported way to do these operations.
 6. The [SDK](#webspatial-sdk) should integrate into existing standard Web projects with as little cost as possible, in a way that is [close to one-click installation](#installation), without changing the project's [original development, build, or deployment workflow](#preview), and while ensuring that the site's existing behavior, performance, and debugging experience on desktop/mobile platforms and ordinary browsers are not affected.
 7. With WebSpatial APIs and the SDK, building a new [spatial app](../concepts/spatial-computing.md#spatial-app) should feel just like building a normal website. If developers want, the app can still be distributed as a standard website, preserving the Web's original cross-platform capability and its [URL-based usage model](https://tpac2025.webspatial.dev/#instant-apps).
 
@@ -162,6 +162,37 @@ You just need to unzip it into a directory on your website that can be publicly 
 :::tip[Already a PWA?]
 If the current site is already a PWA and can be installed as a PWA in Chrome, you can skip this step.
 :::
+
+### Step 4: Spatialize an Element
+
+Now the WebSpatial API is available. Add the [`enable-xr` marker](../api/react-sdk/react-components/jsx-marker.md#enable-xr) to an HTML element to turn it into a [spatialized HTML element](../concepts/spatialized-html-elements.md), then style and update it with normal React and CSS:
+
+```jsx title="Card.jsx" {5}
+function Card({ raised }) {
+  return (
+    <div
+      enable-xr
+      className={raised ? "card card-raised" : "card"}
+    >
+      Hello
+    </div>
+  );
+}
+```
+
+```css title="Card.css"
+.card {
+  position: relative;
+  border-radius: 16px;
+  --xr-background-material: translucent;
+}
+
+.card-raised {
+  --xr-back: 50px;
+}
+```
+
+`enable-xr` is the only marker a typical application needs. Changing the element through React state, classes, inline styles, or refs works the same way as for any other element, and the SDK keeps the spatialized element in sync. See [JSX Markers](../api/react-sdk/react-components/jsx-marker.md) for the details, including the optional compatibility marker for one specific layout scenario.
 
 ## Boilerplate
 
