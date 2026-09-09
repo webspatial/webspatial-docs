@@ -23,7 +23,7 @@ Calling `useMetrics()` itself is always safe — in ordinary browsers, during SS
 
 `useMetrics` follows the [readiness vs. feature support](../react-components/SpatialBoot.md#readiness-vs-feature-support) model. Two conditions must both hold before you call the conversion functions:
 
-1. **The SDK is ready.** Mount the component that calls `useMetrics()` inside [`<SpatialBoot>`](../react-components/SpatialBoot.md). The hook picks its implementation once, when the component mounts: a component that mounted before boot completed keeps the placeholder functions for its whole lifetime, even after boot finishes, until it is remounted.
+1. **The SDK is ready.** Mount the component that calls `useMetrics()` inside [`<SpatialBoot>`](../react-components/SpatialBoot.md). Inside `<SpatialBoot>` that is all you need to do. The detail only matters if you bypass `<SpatialBoot>` and render the component before boot completes: the hook picks its implementation once, when the component mounts, so such a component keeps the placeholder functions until it is remounted.
 2. **The runtime supports unit conversion.** `<SpatialBoot>` also mounts its children in ordinary browsers, where there is nothing to convert, so being inside `<SpatialBoot>` is not enough on its own. Check `WebSpatialRuntime.supports("useMetrics")` and render fallback UI when it returns `false`.
 
 When either condition fails, `useMetrics()` still returns an object, but `pointToPhysical` and `physicalToPoint` throw a `WebSpatialRuntimeError` (with `capability` set to `"useMetrics"`) as soon as they are called. The two function references are stable across renders, so they are safe to list in dependency arrays.

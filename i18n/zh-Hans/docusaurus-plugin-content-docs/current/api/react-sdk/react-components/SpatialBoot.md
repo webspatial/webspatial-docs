@@ -92,23 +92,23 @@ function SpatialPanel() {
 | **就绪**：SDK 是否已经加载完空间能力？ | 把组件渲染为 `<SpatialBoot>` 的子节点，或使用 `onReady` | 在普通浏览器中同样为真，因为那里没有任何东西需要加载。 |
 | **功能支持**：当前运行时是否支持我即将使用的功能？ | `WebSpatialRuntime.supports("<feature>")` | 不同版本的 WebSpatial Runtime 支持的功能不同。启动成功并不意味着功能受支持。 |
 
-启动成功并不能证明所有功能都可用：空间能力是作为一个整体加载的，但底层的 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime) 能做什么，取决于平台及其版本。大多数 WebSpatial API 在不受支持时会自行降级——空间 CSS 会被忽略，[`<Model>`](./Model.md) 会回退到标准的 `<model>` 元素，等等——对于这些 API，你直接写代码即可。少数 JS API 无法静默降级：[`useMetrics`](../js-api/useMetrics.md) 返回的转换函数和 [`convertCoordinate`](../js-api/convertCoordinate.md) 在功能不可用时会抛出 `WebSpatialRuntimeError`。对于这些 API，以及任何你希望在功能缺失时展示*不同* UI 的场景，请先检查功能支持。
+启动成功并不能证明所有功能都可用：空间能力是作为一个整体加载的，但底层的 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime) 能做什么，取决于平台及其版本。大多数 WebSpatial API 在不受支持时会自行降级——空间 CSS 会被忽略，[`<Model>`](./Model.md) 会回退到标准的 `<model>` 元素，等等——对于这些 API，你直接写代码即可。少数 JS API 无法静默降级：[`useMetrics`](../js-api/useMetrics.md) 返回的转换函数在功能不可用时会抛出 `WebSpatialRuntimeError`，而 `await convertCoordinate(...)` 调用（[`convertCoordinate`](../js-api/convertCoordinate.md) 是异步函数）则会以同样的错误 reject。对于这些 API，以及任何你希望在功能缺失时展示*不同* UI 的场景，请先检查功能支持。
 
 `WebSpatialRuntime.supports(name)` 是一个同步检查，可以在任何地方安全调用：启动之前、普通浏览器中，以及 SSR 期间（此时返回 `false`）。对于它不认识的名字，它也会返回 `false`。这些名字就是文档中使用的 API 名称——例如 `"Model"`、`"Reality"`、`"useMetrics"`、`"convertCoordinate"`、`"WindowScene"`，或者 `"-xr-back"` 这样的 CSS 属性。部分名字还接受第二个参数用于更细粒度的检查，例如 `WebSpatialRuntime.supports("Model", ["autoplay"])`。
 
 综合起来，推荐的结构是：
 
 ```text
-runtime / environment      (handled for you by <SpatialBoot> and supports())
+运行时 / 环境            (由 <SpatialBoot> 和 supports() 替你处理)
         |
         v
-    <SpatialBoot>          (spatial components render as its children)
+    <SpatialBoot>        (空间组件渲染为它的子节点)
         |
         v
-feature support check      (WebSpatialRuntime.supports("<feature>"))
+功能支持检查             (WebSpatialRuntime.supports("<feature>"))
         |
         v
-spatial experience  OR  fallback UI
+空间体验  或  回退 UI
 ```
 
 例如，在运行时能够渲染 3D 产品场景的地方展示 3D 场景，在其他所有地方展示一张普通图片：

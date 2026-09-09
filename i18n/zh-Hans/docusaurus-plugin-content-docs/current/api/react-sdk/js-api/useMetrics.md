@@ -23,7 +23,7 @@ description: '在 WebSpatial 布局中完成 2D 像素单位和真实世界米�
 
 `useMetrics` 遵循[就绪与功能支持](../react-components/SpatialBoot.md#readiness-vs-feature-support)模型。调用转换函数之前，下面两个条件必须同时满足：
 
-1. **SDK 已就绪。** 把调用 `useMetrics()` 的组件挂载在 [`<SpatialBoot>`](../react-components/SpatialBoot.md) 内部。这个 Hook 只在组件挂载时选择一次实现：如果组件在启动完成之前就挂载了，那么在它的整个生命周期里都会一直使用占位函数，即使启动随后完成也不会切换，直到组件被重新挂载。
+1. **SDK 已就绪。** 把调用 `useMetrics()` 的组件挂载在 [`<SpatialBoot>`](../react-components/SpatialBoot.md) 内部。在 `<SpatialBoot>` 内部，这样做就足够了。只有当你绕过 `<SpatialBoot>`、在启动完成之前就渲染该组件时，下面这一点才需要注意：这个 Hook 只在组件挂载时选择一次实现，所以这样的组件会一直使用占位函数，直到它被重新挂载。
 2. **运行时支持单位转换。** `<SpatialBoot>` 在普通浏览器中同样会挂载子节点，而那里并没有任何东西可以转换，所以仅仅位于 `<SpatialBoot>` 内部是不够的。请检查 `WebSpatialRuntime.supports("useMetrics")`，并在它返回 `false` 时渲染回退 UI。
 
 只要其中任一条件不满足，`useMetrics()` 仍然会返回一个对象，但 `pointToPhysical` 和 `physicalToPoint` 一被调用就会抛出 `WebSpatialRuntimeError`（其 `capability` 为 `"useMetrics"`）。这两个函数引用在多次渲染之间保持稳定，所以可以安全地放进依赖数组。
