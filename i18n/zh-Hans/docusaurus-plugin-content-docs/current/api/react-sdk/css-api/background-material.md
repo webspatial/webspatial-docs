@@ -13,6 +13,10 @@ description: '为场景或元素的背板设置透明或实时渲染的半透明
 
 WebSpatial SDK 暂时只支持在 HTML 元素（代表网页窗口本身）和被[标记为空间化 HTML 元素](../react-components/jsx-marker.md)的 2D HTML 元素（不含 [3D 容器元素](../../../concepts/3d-content-containers.md)）上使用 `background-material`。
 
+:::tip[Ornament]
+实验性的 [`<Ornament>`](../react-components/Ornament.md) 组件也可以通过它的 `style` 属性接收 `--xr-background-material`，用来设置 Ornament 背板的材质。可接受的值请参考该页面的 [`style`](../react-components/Ornament.md#style) 小节。
+:::
+
 ## 心智模型 {#mental-model}
 
 在 `background-material` 的值是 `none` 的情况下：

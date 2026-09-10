@@ -36,6 +36,16 @@ Both of these Spatial Scene types are effectively bounded local spaces inside th
 
 The third Spatial Scene type is `stage`, which has no bounds and can only be created in [Full Space](./spatial-computing.md#spatial-runtime) mode. WebSpatial SDK does not support this type yet.
 
+## Ornaments
+
+A Spatial Scene can also carry UI outside its own bounds. An Ornament is a piece of 2D HTML content that the [WebSpatial Runtime](./webspatial-app.md#webspatial-runtime) attaches to an edge of the scene window, such as a toolbar floating below the window or a control panel beside it. It follows the window when the window moves or resizes, and it is not clipped by the window bounds.
+
+Ornaments are window-level UI, not page content. They do not participate in the webpage's HTML/CSS layout, they are not [spatialized HTML elements](./spatialized-html-elements.md), and they are not 3D content inside a [3D content container](./3d-content-containers.md). Their content is ordinary 2D HTML rendered in a separate document owned by the runtime, so spatialized HTML elements and 3D container elements cannot be used inside an Ornament.
+
+The top-center edge of the window is occupied by the built-in PWA menu described above, so app-defined Ornaments cannot be anchored there.
+
+WebSpatial SDK provides Ornaments as the experimental [`<Ornament>`](../api/react-sdk/react-components/Ornament.md) React component. Ornaments exist only inside a WebSpatial Runtime; in other environments the component renders nothing.
+
 ## Scene Initialization
 
 Browser windows in desktop operating systems can use Web APIs to set size and even position in webpage code, and these properties can continue to be controlled and modified.

@@ -16,15 +16,16 @@ WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.w
 1. **空间场景**：Web App（PWA）的[起始网页](../concepts/spatial-scenes.md#start-scene)和每个[在新窗口打开的自身网页](../concepts/spatial-scenes.md#new-scenes)，都成为了跟空间环境结合的[空间场景容器](../concepts/spatial-scenes.md)，可以对这些容器的空间属性做不同的[初始化设置](../concepts/spatial-scenes.md#scene-initialization)。
 2. **材质化背板**：[平面窗口类型](../concepts/spatial-scenes.md#scene-type)的网页，可以把[背景面板](../api/react-sdk/css-api/background-material.md)设置为原生质感的半透明材质，随视角和环境实时动态渲染，也可以把背景面板设置为完全透明、边框不可见，让网页中各个元素看上去分散漂浮在空间中。
 3. **体积窗口**：可以把网页窗口[在空间中的行为方式](../concepts/spatial-computing.md)，从优先服务于 2D GUI 需求，改成[模拟真实世界中的物体，让窗口像「盒子」一样](../concepts/spatial-scenes.md#scene-type)有真实体积和[深度](../api/react-sdk/dom-api/innerDepth.md)。
-4. **空间化 HTML 元素**：HTML 元素可以被「抬升」到网页平面前方的 3D 空间中，同时继续参与 CSS 布局系统。这些[被空间化](../concepts/spatialized-html-elements.md)的 HTML 元素，一方面[在 X 轴和 Y 轴上的原有状态和 API](../concepts/spatialized-html-elements.md) 都保持不变，另一方面能作为悬浮在空间场景中的 2D 面片，可以有[材质化背板](../api/react-sdk/css-api/background-material.md)，能通过 CSS 在 Z 轴上[布局和定位](../api/react-sdk/css-api/back.md)、在 3D 空间中做旋转等[变形转换](../api/react-sdk/css-api/transform.md)，可以通过 DOM API 获取[相关状态](../concepts/spatialized-html-elements.md)。
-5. **材质化背景**：HTML 元素的背景可以设置为[实时渲染的半透明材质](../api/react-sdk/css-api/background-material.md)，而不仅限于固定颜色。
-6. **3D 容器元素**：新增两种 3D HTML 元素，作为有真实体积的 3D 内容的容器。这些 3D 容器元素仍然[作为 2D 面片](../concepts/spatialized-html-elements.md)参与 CSS 布局系统，支持 Z 轴[布局](../api/react-sdk/css-api/back.md)和[变形](../api/react-sdk/css-api/transform.md)，但除此之外还能在 2D 面片前方建立一个基于 [3D 开发范式](../concepts/3d-content-containers.md)的局部空间，在其中渲染有真实体积的 3D 内容，让它们能融入 2D 布局系统和 [2D GUI 框架的渲染机制](https://react.dev/learn/thinking-in-react)，实现[「2D 包含 3D」的开发范式](#philosophy)。
-7. **静态 3D 容器元素**：支持用[预制好的 3D 模型资产文件](../api/react-sdk/react-components/Model.md)来渲染容器中的 3D 内容，这种 3D 容器元素的 API [完全基于 Web 标准中的 model element](../api/react-sdk/react-components/Model.md)。
-8. **动态 3D 容器元素**：支持用[可灵活编程的 HTML 风格 3D 引擎 API](../concepts/3d-content-containers.md#3d-engine-api) 来动态渲染容器中的 3D 内容。
-9. **HTML 风格的 3D 引擎 API**：这些 API 包括 [3D 资产声明](../concepts/3d-content-containers.md#3d-engine-api)（模型、材质等），以及内置能力模块、开箱即用的 [3D 实体](../api/react-sdk/react-components/Reality.md)（比如预制的几何形状）。可以通过树状结构和 [Transform 属性](../api/react-sdk/react-components/Reality.md)在 [3D 坐标系](../concepts/3d-content-containers.md#2d-containing-3d)中自由组合这些实体，实现任意 3D 场景和动画效果。
-10. **2D 附着实体**：可以[把 2D HTML 内容附着在面片形状的 3D 实体上](../api/react-sdk/react-components/Reality.md)，让 3D 内容中也可以嵌入全功能的 2D 内容。
-11. **空间交互**：在空间化 2D HTML 元素对应的 2D 面片上，在 3D 容器元素中的 3D 内容上（3D 网格的表面或包围盒），都可以触发[新的空间交互事件](../concepts/natural-interactions.md#spatial-interactions)（比如点击、拖拽、旋转等），获得 3D 坐标系位置等 3D 空间中的交互信息。
-12. **2D + 3D 混合内容**：基于 CSS 布局系统的 2D 内容，和基于 3D 引擎的动态 3D 容器内容，可以通过[坐标系转换、单位转换](../concepts/3d-content-containers.md#2d-containing-3d)等 API 实现彼此之间的对齐、联动等结合。
+4. **窗口 Ornament**：网页窗口可以通过实验性的 [`<Ornament>` 组件](../api/react-sdk/react-components/Ornament.md)，在自身边缘附着[窗口级别的 2D UI](../concepts/spatial-scenes.md#ornaments)，比如工具栏或侧边面板。Ornament 悬浮在窗口边界之外、跟随窗口移动，并且不参与网页的布局流。
+5. **空间化 HTML 元素**：HTML 元素可以被「抬升」到网页平面前方的 3D 空间中，同时继续参与 CSS 布局系统。这些[被空间化](../concepts/spatialized-html-elements.md)的 HTML 元素，一方面[在 X 轴和 Y 轴上的原有状态和 API](../concepts/spatialized-html-elements.md) 都保持不变，另一方面能作为悬浮在空间场景中的 2D 面片，可以有[材质化背板](../api/react-sdk/css-api/background-material.md)，能通过 CSS 在 Z 轴上[布局和定位](../api/react-sdk/css-api/back.md)、在 3D 空间中做旋转等[变形转换](../api/react-sdk/css-api/transform.md)，可以通过 DOM API 获取[相关状态](../concepts/spatialized-html-elements.md)。
+6. **材质化背景**：HTML 元素的背景可以设置为[实时渲染的半透明材质](../api/react-sdk/css-api/background-material.md)，而不仅限于固定颜色。
+7. **3D 容器元素**：新增两种 3D HTML 元素，作为有真实体积的 3D 内容的容器。这些 3D 容器元素仍然[作为 2D 面片](../concepts/spatialized-html-elements.md)参与 CSS 布局系统，支持 Z 轴[布局](../api/react-sdk/css-api/back.md)和[变形](../api/react-sdk/css-api/transform.md)，但除此之外还能在 2D 面片前方建立一个基于 [3D 开发范式](../concepts/3d-content-containers.md)的局部空间，在其中渲染有真实体积的 3D 内容，让它们能融入 2D 布局系统和 [2D GUI 框架的渲染机制](https://react.dev/learn/thinking-in-react)，实现[「2D 包含 3D」的开发范式](#philosophy)。
+8. **静态 3D 容器元素**：支持用[预制好的 3D 模型资产文件](../api/react-sdk/react-components/Model.md)来渲染容器中的 3D 内容，这种 3D 容器元素的 API [完全基于 Web 标准中的 model element](../api/react-sdk/react-components/Model.md)。
+9. **动态 3D 容器元素**：支持用[可灵活编程的 HTML 风格 3D 引擎 API](../concepts/3d-content-containers.md#3d-engine-api) 来动态渲染容器中的 3D 内容。
+10. **HTML 风格的 3D 引擎 API**：这些 API 包括 [3D 资产声明](../concepts/3d-content-containers.md#3d-engine-api)（模型、材质等），以及内置能力模块、开箱即用的 [3D 实体](../api/react-sdk/react-components/Reality.md)（比如预制的几何形状）。可以通过树状结构和 [Transform 属性](../api/react-sdk/react-components/Reality.md)在 [3D 坐标系](../concepts/3d-content-containers.md#2d-containing-3d)中自由组合这些实体，实现任意 3D 场景和动画效果。
+11. **2D 附着实体**：可以[把 2D HTML 内容附着在面片形状的 3D 实体上](../api/react-sdk/react-components/Reality.md)，让 3D 内容中也可以嵌入全功能的 2D 内容。
+12. **空间交互**：在空间化 2D HTML 元素对应的 2D 面片上，在 3D 容器元素中的 3D 内容上（3D 网格的表面或包围盒），都可以触发[新的空间交互事件](../concepts/natural-interactions.md#spatial-interactions)（比如点击、拖拽、旋转等），获得 3D 坐标系位置等 3D 空间中的交互信息。
+13. **2D + 3D 混合内容**：基于 CSS 布局系统的 2D 内容，和基于 3D 引擎的动态 3D 容器内容，可以通过[坐标系转换、单位转换](../concepts/3d-content-containers.md#2d-containing-3d)等 API 实现彼此之间的对齐、联动等结合。
 
 ### WebSpatial SDK {#webspatial-sdk}
 
