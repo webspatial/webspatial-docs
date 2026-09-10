@@ -72,11 +72,11 @@ The following 3D asset declarations can appear among the top-level children of `
   <World>
 ```
 
-3. 2D HTML/CSS content to be attached onto an Entity can be declared.
+3. 2D HTML/CSS content to be attached onto an Entity can be declared. See [Attachment Entity](#attachment-entity).
 
 ```js
 <Reality>
-  <AttachmentAsset name="info">
+  <AttachmentAsset id="info">
     <div style={{ width: '100%' }}>
       <p>Some text</p>
     </div>
@@ -401,18 +401,29 @@ Do not combine this approach with an active `useEntityAnimation` on the same Ent
 
 ## Attachment Entity
 
-`<AttachmentEntity>` is an Entity similar to `<Plane>`. It can reference [predeclared 2D HTML/CSS content](#3d-assets) and attach that content onto its own surface.
+`<AttachmentEntity>` is a 2D surface, similar to `<Plane>`, that displays [predeclared 2D HTML/CSS content](#3d-assets) inside the 3D space. The content stays part of the page's React tree, so it shares props, context, and state with the rest of the app: a button inside an attachment can update state that the rest of the page reads, and vice versa.
 
-> [!CAUTION]
-> **Current limitation**
->
-> In a later version of WebSpatial SDK, `<AttachmentEntity>` will support `width` and `height` like `<Plane>` does, which it does not currently support, and full [Transform props](#3d-entity), whereas the current version only supports `position`. For now, you need to use the `size` prop to set the size, with the same `px` unit used by 2D content.
+The content is declared once with `<AttachmentAsset id="...">` as a top-level child of `<Reality>`. Any number of `<AttachmentEntity>` components can reference that `id`, and each one renders its own copy of the content.
+
+`<AttachmentEntity>` must be placed inside `<World>` as a descendant of an `<Entity>` (or any other Entity). It follows that parent's transform, so moving the parent moves the attachment. Placing it directly under `<World>` renders nothing.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `attachment` | `string` | | Required. The `id` of the `<AttachmentAsset>` to display. Can change at runtime. |
+| `position` | `{ x, y, z }` | `{ x: 0, y: 0, z: 0 }` | Position relative to the parent Entity, in meters. |
+| `rotation` | `{ x, y, z }` | `{ x: 0, y: 0, z: 0 }` | Euler rotation in degrees, like other [Transform props](#3d-entity). |
+| `scale` | `{ x, y, z }` | `{ x: 1, y: 1, z: 1 }` | Scale multipliers. |
+| `width` | `number` | runtime default | Width of the surface in meters. |
+| `height` | `number` | runtime default | Height of the surface in meters. |
+| `cornerRadius` | `number` | `0` | Uniform corner radius in `px`, the same unit the 2D content uses. The content is clipped to the rounded rectangle. Negative values are treated as `0`. |
+| `backgroundMaterial` | `string` | `"transparent"` | Background behind the content. Accepts the same values as [`background-material`](../css-api/background-material.md): `none`, `transparent`, `translucent`, `thin`, `regular`, `thick`. |
 
 ```js
-<Reality>
-  <AttachmentAsset name="info">
-    <div style={{ width: "100%" }}>
+<Reality style={{ width: "500px", height: "500px", "--xr-depth": 200 }}>
+  <AttachmentAsset id="info">
+    <div style={{ width: "100%", padding: "8px" }}>
       <p>Some text</p>
+      <button onClick={() => console.log("clicked in 3D")}>Tap</button>
     </div>
   </AttachmentAsset>
   <World>
@@ -420,10 +431,31 @@ Do not combine this approach with an active `useEntityAnimation` on the same Ent
     <Entity position={{ x: -0.5, y: -0.2, z: 0.3 }}>
       <AttachmentEntity
         attachment="info"
-        position={{ x: 0, y: 0, z: 0 }}
-        size={{ width: 100, height: 100 }}
+        position={{ x: 0, y: 0.15, z: 0 }}
+        rotation={{ x: 0, y: 20, z: 0 }}
+        width={0.3}
+        height={0.15}
+        cornerRadius={16}
+        backgroundMaterial="translucent"
       />
     </Entity>
   </World>
 </Reality>
 ```
+
+Behavior to keep in mind:
+
+- Every prop can change at runtime. Updates are applied in place; the attachment surface is not recreated.
+- The HTML content fills the attachment surface. Size the content with CSS relative to that surface, not with fixed pixel dimensions that assume a page layout.
+- Styles from the page's `<head>` (stylesheets and `<style>` blocks, including ones injected later) and the root element's class names are mirrored into the attachment, so global CSS and utility classes work inside it.
+- Attachments are 2D surfaces only. They accept no child Entities, `materials`, or spatial event handlers, and `useEntityAnimation` cannot be bound to them. Spatialized HTML elements, `<Model>`, and `<Reality>` placed inside an `<AttachmentAsset>` render as plain HTML.
+
+> [!CAUTION]
+> **Breaking change after 2.0.0**
+>
+> `@webspatial/react-sdk` releases later than `2.0.0` change this API. Older code must be migrated:
+>
+> - `<AttachmentAsset name="...">` becomes `<AttachmentAsset id="...">`.
+> - `position={[x, y, z]}` becomes `position={{ x, y, z }}`.
+> - `size={{ width, height }}` in `px` is replaced by `width` and `height` in meters.
+> - `rotation`, `scale`, `cornerRadius`, and `backgroundMaterial` are new.

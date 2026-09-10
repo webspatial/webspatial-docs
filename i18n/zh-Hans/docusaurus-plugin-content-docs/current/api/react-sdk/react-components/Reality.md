@@ -72,11 +72,11 @@ import {
   <World>
 ```
 
-3. 可以声明要附着在 Entity 上的 2D HTML/CSS 内容。
+3. 可以声明要附着在 Entity 上的 2D HTML/CSS 内容。见[附着实体](#attachment-entity)。
 
 ```js
 <Reality>
-  <AttachmentAsset name="info">
+  <AttachmentAsset id="info">
     <div style={{ width: '100%' }}>
       <p>Some text</p>
     </div>
@@ -397,17 +397,29 @@ Transform 属性和 `useEntityAnimation` 移动的是 `<Reality>` 3D 空间内�
 
 ## 附着实体 {#attachment-entity}
 
-`<AttachmentEntity>` 是一个类似 `<Plane>` 的 Entity，可以引用[预先声明好的 2D HTML/CSS 内容](#3d-assets)，让它附着在自己表面上。
+`<AttachmentEntity>` 是一个类似 `<Plane>` 的 2D 面片，用于在 3D 空间中显示[预先声明好的 2D HTML/CSS 内容](#3d-assets)。这些内容仍然属于页面的 React 树，因此可以和应用的其他部分共享 props、context 和 state：附着内容里的按钮可以更新页面其他部分读取的 state，反之亦然。
 
-:::caution[当前限制]
-WebSpatial SDK 后续版本会让 `<AttachmentEntity>` 像 `<Plane>` 一样支持 `width` 和 `height`（当前版本暂不支持）和完整 [Transform 属性](#3d-entity)（当前版本只支持 `position`），需要临时用 `size` 属性设置大小（单位是跟 2D 内容一样的 `px`）。
-:::
+内容通过 `<AttachmentAsset id="...">` 作为 `<Reality>` 的顶层子节点声明一次。任意数量的 `<AttachmentEntity>` 都可以引用这个 `id`，每一个都会渲染出一份独立的内容。
+
+`<AttachmentEntity>` 必须放在 `<World>` 内、作为 `<Entity>`（或其他任意 Entity）的后代使用。它会跟随父节点的 transform，父节点移动时附着内容也随之移动。直接放在 `<World>` 下不会渲染任何内容。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `attachment` | `string` | | 必填。要显示的 `<AttachmentAsset>` 的 `id`，可以在运行时修改。 |
+| `position` | `{ x, y, z }` | `{ x: 0, y: 0, z: 0 }` | 相对于父 Entity 的位置，单位为米。 |
+| `rotation` | `{ x, y, z }` | `{ x: 0, y: 0, z: 0 }` | 欧拉角旋转，单位为度，与其他 [Transform 属性](#3d-entity)一致。 |
+| `scale` | `{ x, y, z }` | `{ x: 1, y: 1, z: 1 }` | 缩放倍数。 |
+| `width` | `number` | 运行时默认值 | 面片宽度，单位为米。 |
+| `height` | `number` | 运行时默认值 | 面片高度，单位为米。 |
+| `cornerRadius` | `number` | `0` | 统一的圆角半径，单位是跟 2D 内容一样的 `px`。内容会按圆角矩形裁剪。负值按 `0` 处理。 |
+| `backgroundMaterial` | `string` | `"transparent"` | 内容背后的背景。接受与 [`background-material`](../css-api/background-material.md) 相同的值：`none`、`transparent`、`translucent`、`thin`、`regular`、`thick`。 |
 
 ```js
-<Reality>
-  <AttachmentAsset name="info">
-    <div style={{ width: "100%" }}>
+<Reality style={{ width: "500px", height: "500px", "--xr-depth": 200 }}>
+  <AttachmentAsset id="info">
+    <div style={{ width: "100%", padding: "8px" }}>
       <p>Some text</p>
+      <button onClick={() => console.log("clicked in 3D")}>Tap</button>
     </div>
   </AttachmentAsset>
   <World>
@@ -415,10 +427,30 @@ WebSpatial SDK 后续版本会让 `<AttachmentEntity>` 像 `<Plane>` 一样支�
     <Entity position={{ x: -0.5, y: -0.2, z: 0.3 }}>
       <AttachmentEntity
         attachment="info"
-        position={{ x: 0, y: 0, z: 0 }}
-        size={{ width: 100, height: 100 }}
+        position={{ x: 0, y: 0.15, z: 0 }}
+        rotation={{ x: 0, y: 20, z: 0 }}
+        width={0.3}
+        height={0.15}
+        cornerRadius={16}
+        backgroundMaterial="translucent"
       />
     </Entity>
   </World>
 </Reality>
 ```
+
+需要注意的行为：
+
+- 所有属性都可以在运行时修改。更新会原地生效，不会重新创建附着面片。
+- HTML 内容会撑满附着面片。请用相对于面片的 CSS 来设置内容尺寸，不要使用假定页面布局的固定像素尺寸。
+- 页面 `<head>` 中的样式（样式表和 `<style>` 块，包括后续注入的）以及根元素的 class 名称会被镜像到附着内容中，因此全局 CSS 和工具类在其中同样可用。
+- 附着内容只是 2D 面片。它不接受子 Entity、`materials` 或空间事件处理器，也不能绑定 `useEntityAnimation`。放在 `<AttachmentAsset>` 内的空间化 HTML 元素、`<Model>` 和 `<Reality>` 会以普通 HTML 渲染。
+
+:::caution[2.0.0 之后的破坏性变更]
+`2.0.0` 之后发布的 `@webspatial/react-sdk` 版本修改了这个 API。旧代码需要迁移：
+
+- `<AttachmentAsset name="...">` 改为 `<AttachmentAsset id="...">`。
+- `position={[x, y, z]}` 改为 `position={{ x, y, z }}`。
+- 以 `px` 为单位的 `size={{ width, height }}` 被以米为单位的 `width` 和 `height` 取代。
+- `rotation`、`scale`、`cornerRadius` 和 `backgroundMaterial` 是新增属性。
+:::
