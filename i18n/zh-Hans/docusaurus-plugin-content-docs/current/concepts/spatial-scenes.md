@@ -36,6 +36,16 @@ Spatial Scene 也可以设置为 `volume` 类型，这种类型不再优先服�
 
 第三种类型的 Spatial Scene 是 `stage`，没有边界，只能在 [Full Space](./spatial-computing.md#spatial-runtime) 模式下创建， WebSpatial SDK 暂时还不支持这种类型。
 
+## Ornament {#ornaments}
+
+空间场景还可以在自身边界之外携带 UI。Ornament 是一块由 [WebSpatial Runtime](./webspatial-app.md#webspatial-runtime) 附着在场景窗口某条边上的 2D HTML 内容，比如悬浮在窗口下方的工具栏，或者窗口旁边的控制面板。它会跟随窗口一起移动和缩放，并且不受窗口边界的裁切。
+
+Ornament 是窗口级别的 UI，而不是网页内容。它不参与网页的 HTML/CSS 布局，不是[空间化 HTML 元素](./spatialized-html-elements.md)，也不是 [3D 内容容器](./3d-content-containers.md)中的 3D 内容。它的内容是渲染在由运行时管理的独立文档中的普通 2D HTML，因此空间化 HTML 元素和 3D 容器元素不能在 Ornament 中使用。
+
+窗口顶部正中的边缘被上文提到的内置 PWA 菜单占用，所以应用自定义的 Ornament 不能锚定在那里。
+
+WebSpatial SDK 以实验性的 [`<Ornament>`](../api/react-sdk/react-components/Ornament.md) React 组件提供 Ornament 能力。Ornament 只存在于 WebSpatial Runtime 中；在其他环境下该组件不渲染任何内容。
+
 ## 场景初始化 {#scene-initialization}
 
 桌面操作系统中的浏览器窗口，可以在网页代码中通过 Web API 设置大小甚至位置，并且可以持续控制和修改这些属性。

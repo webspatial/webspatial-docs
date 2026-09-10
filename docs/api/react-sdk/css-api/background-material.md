@@ -13,6 +13,10 @@ description: 'Give scene and element backplates a transparent or real-time trans
 
 The current WebSpatial SDK only supports `background-material` on the HTML element that represents the webpage window itself, and on 2D HTML elements [marked as spatialized HTML elements](../react-components/jsx-marker.md), excluding [3D container elements](../../../concepts/3d-content-containers.md).
 
+:::tip[Ornaments]
+The experimental [`<Ornament>`](../react-components/Ornament.md) component also accepts `--xr-background-material` through its `style` prop to set the material of the Ornament's backplate. See [`style`](../react-components/Ornament.md#style) on that page for the accepted values.
+:::
+
 ## Mental Model
 
 When the value of `background-material` is `none`:
