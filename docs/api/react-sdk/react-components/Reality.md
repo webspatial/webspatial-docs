@@ -51,12 +51,12 @@ The second is [3D asset declarations](#3d-assets), such as `<Material>`. These R
 
 The following 3D asset declarations can appear among the top-level children of `<Reality>`:
 
-1. Predeclared materials can be referenced.
+1. Predeclared materials can be referenced. See [Materials](#materials) for the supported material types.
 
 ```js
 <Reality>
   <Material type="unlit" id="solid" color="#00ff00" />
-  <Material type="unlit" id="glass" color="#0000ff" transparent opacity={0.5} />
+  <Material type="pbr" id="steel" color="#c0c0c0" metalness={1} roughness={0.2} />
   <World>
 ```
 
@@ -83,6 +83,104 @@ The following 3D asset declarations can appear among the top-level children of `
   </AttachmentAsset>
   <World>
 ```
+
+## Materials
+
+A material is declared once as a top-level child of `<Reality>` with a unique `id`, then referenced from any number of Entities through their `materials` prop. Changing a material's props after mount updates every Entity that uses it.
+
+There are two material types. `<Material type="...">` dispatches to the matching dedicated component, so `<Material type="unlit">` and `<UnlitMaterial>` are equivalent, and `<Material type="pbr">` and `<PBRMaterial>` are equivalent.
+
+```js
+import { Material, UnlitMaterial, PBRMaterial, MaterialPresets } from "@webspatial/react-sdk";
+```
+
+### Unlit Material
+
+An unlit material is flat-shaded: it shows its color or texture as-is and ignores scene lighting. Use it for UI-like surfaces, markers, and anything that must look identical regardless of the environment.
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Required. The name Entities use in `materials`. |
+| `color` | `string` | CSS color string, for example `"#00ff00"`. |
+| `textureId` | `string` | `id` of a [`<Texture>`](#textures) to show on the surface; `color` then acts as a tint. |
+| `transparent` | `boolean` | Enables alpha blending so `opacity` takes effect. |
+| `opacity` | `number` | `0` to `1`. |
+
+```js
+<Reality>
+  <UnlitMaterial id="solid" color="#00ff00" />
+  <UnlitMaterial id="glass" color="#0000ff" transparent opacity={0.5} />
+  <World>
+    <Box materials={["glass"]} width={0.2} height={0.2} depth={0.2} />
+  </World>
+</Reality>
+```
+
+### PBR Material
+
+A physically based rendering (PBR) material responds to the lighting of the space it is displayed in, so surfaces read as metal, plastic, glass, or matte. `metalness` and `roughness` follow the same conventions as common 3D engines.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `string` | | Required. The name Entities use in `materials`. |
+| `color` | `string` | `"#FFFFFF"` | Base color as a CSS color string. Acts as a tint when `textureId` is set. |
+| `textureId` | `string` | | `id` of a [`<Texture>`](#textures) used as the base color texture. |
+| `metalness` | `number` | `0` | `0` is a non-metal (dielectric) surface, `1` is a full metal. |
+| `roughness` | `number` | `0.5` | `0` is mirror smooth, `1` is fully rough (diffuse). |
+| `transparent` | `boolean` | `false` | Enables alpha blending so `opacity` takes effect. |
+| `opacity` | `number` | `1` | `0` to `1`. Only used when `transparent` is `true`. |
+
+```js
+<Reality>
+  <PBRMaterial id="steel" color="#c0c0c0" metalness={1} roughness={0.2} />
+  <PBRMaterial id="rubber" color="#222222" metalness={0} roughness={0.9} />
+  <Material type="pbr" id="tinted-glass" color="#aaddff" roughness={0.05} transparent opacity={0.2} />
+  <World>
+    <Sphere radius={0.1} materials={["steel"]} position={{ x: -0.25, y: 0, z: 0 }} />
+    <Sphere radius={0.1} materials={["rubber"]} />
+    <Sphere radius={0.1} materials={["tinted-glass"]} position={{ x: 0.25, y: 0, z: 0 }} />
+  </World>
+</Reality>
+```
+
+#### Material Presets
+
+`MaterialPresets` is a plain object of tuned `metalness` / `roughness` (and, for glass, `transparent` / `opacity`) starting points. Spread a preset into a PBR material and override individual props as needed:
+
+| Preset | Intended look |
+| --- | --- |
+| `matte` | Wood, fabric, paper, concrete |
+| `glossy` | Polished plastic, lacquer |
+| `plastic` | General plastic surfaces |
+| `metal` | Chrome, steel, aluminum |
+| `glass` | Windows, bottles, lenses (transparent) |
+
+```js
+<PBRMaterial id="car-paint" {...MaterialPresets.metal} color="#c0392b" />
+<PBRMaterial id="window" {...MaterialPresets.glass} />
+```
+
+Presets do not include `color` or `textureId`; they are pure data and can be inspected or extended in JavaScript.
+
+### Textures
+
+A texture is an image declared as a top-level child of `<Reality>` with a unique `id`. Both material types reference it through `textureId`.
+
+```js
+<Reality>
+  <Texture id="wood-grain" url="/textures/wood.jpg" onLoad={() => {}} onError={() => {}} />
+  <PBRMaterial id="oak" textureId="wood-grain" {...MaterialPresets.matte} />
+  <World>
+    <Box materials={["oak"]} width={0.3} height={0.05} depth={0.3} />
+  </World>
+</Reality>
+```
+
+If the referenced texture has not loaded yet, or fails to load, the material renders with `color` only and picks up the texture automatically once it becomes available.
+
+:::caution[Runtime support for PBR materials]
+Unlit materials are supported by every WebSpatial Runtime. PBR materials require a newer WebSpatial Runtime and a `@webspatial/react-sdk` release later than `2.0.0`; they are currently available on visionOS only. Check `WebSpatialRuntime.supports("Material", ["pbr"])` before declaring one and fall back to an unlit material when it returns `false`. What an unsupported runtime renders for a PBR material is not defined.
+:::
 
 ## 3D Entity
 

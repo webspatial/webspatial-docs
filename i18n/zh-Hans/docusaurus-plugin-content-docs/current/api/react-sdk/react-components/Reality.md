@@ -51,12 +51,12 @@ import {
 
 在 `<Reality>` 的顶层子节点中，可以包含以下 3D 资产声明：
 
-1. 可以引用预先声明的材质。
+1. 可以引用预先声明的材质。支持的材质类型见[材质](#materials)。
 
 ```js
 <Reality>
   <Material type="unlit" id="solid" color="#00ff00" />
-  <Material type="unlit" id="glass" color="#0000ff" transparent opacity={0.5} />
+  <Material type="pbr" id="steel" color="#c0c0c0" metalness={1} roughness={0.2} />
   <World>
 ```
 
@@ -83,6 +83,104 @@ import {
   </AttachmentAsset>
   <World>
 ```
+
+## 材质 {#materials}
+
+材质作为 `<Reality>` 的顶层子节点声明一次，带有唯一的 `id`，然后可以被任意数量的 Entity 通过 `materials` 属性引用。挂载后修改材质的属性，会同时更新所有使用它的 Entity。
+
+材质有两种类型。`<Material type="...">` 会分发到对应的专用组件，因此 `<Material type="unlit">` 等同于 `<UnlitMaterial>`，`<Material type="pbr">` 等同于 `<PBRMaterial>`。
+
+```js
+import { Material, UnlitMaterial, PBRMaterial, MaterialPresets } from "@webspatial/react-sdk";
+```
+
+### 无光照材质 {#unlit-material}
+
+无光照（unlit）材质是平面着色的：它原样显示颜色或贴图，忽略场景光照。适合类 UI 的表面、标记物，以及任何需要在不同环境下看起来完全一致的内容。
+
+| 属性 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | `string` | 必填。Entity 在 `materials` 中引用的名称。 |
+| `color` | `string` | CSS 颜色字符串，例如 `"#00ff00"`。 |
+| `textureId` | `string` | 要显示在表面上的 [`<Texture>`](#textures) 的 `id`；此时 `color` 作为色调叠加。 |
+| `transparent` | `boolean` | 开启 alpha 混合，使 `opacity` 生效。 |
+| `opacity` | `number` | `0` 到 `1`。 |
+
+```js
+<Reality>
+  <UnlitMaterial id="solid" color="#00ff00" />
+  <UnlitMaterial id="glass" color="#0000ff" transparent opacity={0.5} />
+  <World>
+    <Box materials={["glass"]} width={0.2} height={0.2} depth={0.2} />
+  </World>
+</Reality>
+```
+
+### PBR 材质 {#pbr-material}
+
+基于物理的渲染（PBR）材质会响应所在空间的光照，让表面呈现出金属、塑料、玻璃或哑光的质感。`metalness` 和 `roughness` 的约定与常见 3D 引擎一致。
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `id` | `string` | | 必填。Entity 在 `materials` 中引用的名称。 |
+| `color` | `string` | `"#FFFFFF"` | 基础颜色，CSS 颜色字符串。设置了 `textureId` 时作为色调叠加。 |
+| `textureId` | `string` | | 用作基础颜色贴图的 [`<Texture>`](#textures) 的 `id`。 |
+| `metalness` | `number` | `0` | `0` 为非金属（电介质）表面，`1` 为完全金属。 |
+| `roughness` | `number` | `0.5` | `0` 为镜面光滑，`1` 为完全粗糙（漫反射）。 |
+| `transparent` | `boolean` | `false` | 开启 alpha 混合，使 `opacity` 生效。 |
+| `opacity` | `number` | `1` | `0` 到 `1`。只在 `transparent` 为 `true` 时生效。 |
+
+```js
+<Reality>
+  <PBRMaterial id="steel" color="#c0c0c0" metalness={1} roughness={0.2} />
+  <PBRMaterial id="rubber" color="#222222" metalness={0} roughness={0.9} />
+  <Material type="pbr" id="tinted-glass" color="#aaddff" roughness={0.05} transparent opacity={0.2} />
+  <World>
+    <Sphere radius={0.1} materials={["steel"]} position={{ x: -0.25, y: 0, z: 0 }} />
+    <Sphere radius={0.1} materials={["rubber"]} />
+    <Sphere radius={0.1} materials={["tinted-glass"]} position={{ x: 0.25, y: 0, z: 0 }} />
+  </World>
+</Reality>
+```
+
+#### 材质预设 {#material-presets}
+
+`MaterialPresets` 是一个普通对象，提供调好的 `metalness` / `roughness`（glass 还包含 `transparent` / `opacity`）起始值。把预设展开到 PBR 材质上，再按需覆盖单个属性：
+
+| 预设 | 目标质感 |
+| --- | --- |
+| `matte` | 木材、织物、纸张、混凝土 |
+| `glossy` | 抛光塑料、漆面 |
+| `plastic` | 一般塑料表面 |
+| `metal` | 铬、钢、铝 |
+| `glass` | 窗户、瓶子、镜片（透明） |
+
+```js
+<PBRMaterial id="car-paint" {...MaterialPresets.metal} color="#c0392b" />
+<PBRMaterial id="window" {...MaterialPresets.glass} />
+```
+
+预设不包含 `color` 和 `textureId`；它们是纯数据，可以在 JavaScript 中读取或扩展。
+
+### 贴图 {#textures}
+
+贴图是作为 `<Reality>` 顶层子节点声明的图片，带有唯一的 `id`。两种材质都通过 `textureId` 引用它。
+
+```js
+<Reality>
+  <Texture id="wood-grain" url="/textures/wood.jpg" onLoad={() => {}} onError={() => {}} />
+  <PBRMaterial id="oak" textureId="wood-grain" {...MaterialPresets.matte} />
+  <World>
+    <Box materials={["oak"]} width={0.3} height={0.05} depth={0.3} />
+  </World>
+</Reality>
+```
+
+如果引用的贴图尚未加载完成或加载失败，材质会只用 `color` 渲染，并在贴图可用后自动应用它。
+
+:::caution[PBR 材质的运行环境支持]
+无光照材质在所有 WebSpatial Runtime 中都可用。PBR 材质需要更新的 WebSpatial Runtime，以及 `2.0.0` 之后发布的 `@webspatial/react-sdk` 版本；目前仅在 visionOS 上可用。声明 PBR 材质之前，先用 `WebSpatialRuntime.supports("Material", ["pbr"])` 检查，返回 `false` 时回退为无光照材质。不支持的运行环境如何渲染 PBR 材质没有定义。
+:::
 
 ## 3D 实体 {#3d-entity}
 
