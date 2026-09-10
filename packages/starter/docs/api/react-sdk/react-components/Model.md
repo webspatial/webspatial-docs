@@ -6,7 +6,7 @@ description: 'Render 3D model files inside a spatialized container using the Web
 # `<Model>`
 
 > [!IMPORTANT]
-> These APIs require `@webspatial/react-sdk` version `1.7.0` or later.
+> These APIs require `@webspatial/react-sdk` version `1.7.0` or later. Individual playback features also depend on the WebSpatial Runtime version; see [Runtime support](#runtime-support).
 
 The `<Model>` component implements the [static 3D content container element](../../../concepts/3d-content-containers.md) in the WebSpatial API. This element is compatible with the API of the `<model>` element in Web standards, while also enhancing the standard capability so that the 2D plane corresponding to the element gains the capabilities of a [spatialized HTML element](../../../concepts/spatialized-html-elements.md), and the 3D model can render truly volumetric 3D content in the space in front of that 2D plane.
 
@@ -24,7 +24,7 @@ function Example() {
   return (
     <Model
       enable-xr
-      autoplay
+      autoPlay
       loop
       style={{ height: "200px", "--xr-depth": "100px" }}
     >
@@ -82,13 +82,25 @@ function MyScene() {
 }
 ```
 
-### `autoplay`
+### `autoPlay` {#autoplay}
 
-The `autoplay` attribute starts built-in model animations automatically after the model file has loaded and is ready to render.
+The `autoPlay` prop is a Boolean. If `true`, the first animation authored inside the model file starts playing automatically after the model file has loaded and is ready to render. It has no effect on a model file without animation.
+
+Use the React prop name `autoPlay`. A lowercase `autoplay` attribute is not recognized by the SDK.
 
 ### `loop`
 
-The `loop` prop restarts built-in model animations automatically when playback reaches the end.
+The `loop` prop is a Boolean. If `true`, the animation authored inside the model file restarts automatically when playback reaches the end.
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function LoopingRobot() {
+  return <Model src="/modelasset/robot.glb" autoPlay loop enable-xr />;
+}
+```
+
+`autoPlay` and `loop` only control playback of animation stored in the model file. They do not move, rotate, or scale the model. See [Animation Playback API](#animation-playback-api) for the imperative controls and for how this differs from animating the model's transform.
 
 ### `loading`
 
@@ -140,7 +152,25 @@ Triggered when the model fails to load. If multiple sources are provided, this e
 
 ## JavaScript API
 
-Access the following JavaScript APIs through a React ref to the underlying `<Model>` element.
+Access the following JavaScript APIs through a React ref to the underlying `<Model>` element. In TypeScript, type the ref with `ModelRef`, exported from `@webspatial/react-sdk`.
+
+```jsx
+import { useRef } from "react";
+import { Model } from "@webspatial/react-sdk";
+
+function ModelWithRef() {
+  const modelRef = useRef(null);
+
+  return (
+    <Model
+      ref={modelRef}
+      src="/modelasset/robot.glb"
+      enable-xr
+      onLoad={() => console.log(modelRef.current.currentSrc)}
+    />
+  );
+}
+```
 
 `currentSrc`
 
@@ -157,15 +187,22 @@ A readable and writable `DOMMatrixReadOnly` representing the [relationship betwe
 
 By default, the 3D model fills as much of `<Model>`'s width or height as possible while preserving its original proportions, so you can control the size of the 3D model by controlling the size of the 2D plane corresponding to `<Model>`.
 
-### Animation Playback API
+### Animation Playback API {#animation-playback-api}
+
+These APIs control animation that is authored inside the model file, such as a skeletal or keyframe animation exported in a GLB or USDZ file. The runtime plays the model's first available animation. If the file contains no animation, `duration` is `0` and `play()` has no visible effect.
+
+> [!NOTE]
+> **Playback is not the same as moving the model**
+>
+> The playback API changes what the model shows over time. It does not move, rotate, or scale the model. To place the model inside its container, use `entityTransform`. To animate the position, rotation, or scale of a model over time, render it as a [`<ModelEntity>`](./Reality.md#model-entity) inside `<Reality>` and use [`useEntityAnimation`](../js-api/useEntityAnimation.md). See [Animation](./Reality.md#animation) for the full picture.
 
 `duration`
 
-A read-only `double` reflecting the un-scaled total duration of the model animation in seconds. If the model has no animation, the value is `0`.
+A read-only `double` reflecting the un-scaled total duration of the model animation in seconds. If the model has no animation, the value is `0`. The value becomes available once the model has loaded; read it in [`onLoad`](#onload) or after `ready` resolves.
 
 `currentTime`
 
-A readable and writable `double` reflecting the un-scaled playback time of the model animation in seconds. It is clamped to the duration of the animation, so for a model with no animation, the value is always `0`.
+A readable and writable `double` reflecting the un-scaled playback time of the model animation in seconds. Assign it to seek. It is clamped to the duration of the animation, so for a model with no animation, the value is always `0`.
 
 `playbackRate`
 
@@ -173,7 +210,7 @@ A readable and writable `double` reflecting the time scaling for animations, if 
 
 `paused`
 
-A read-only `Boolean` indicating whether the model's animation is currently paused.
+A read-only `Boolean` indicating whether the model's animation is currently paused. It is `true` until playback starts.
 
 `play()`
 
@@ -181,4 +218,68 @@ Attempts to play the model's animation, if present. Returns a `Promise` that res
 
 `pause()`
 
-Attempts to pause the playback of the model's animation. If the model is already paused, this method has no effect.
+Attempts to pause the playback of the model's animation. Returns a `Promise`. If the model is already paused, this method has no effect.
+
+Before the model has loaded, the getters return their defaults (`paused` is `true`, `duration` and `currentTime` are `0`, `playbackRate` is `1`), and assignments to `currentTime` and `playbackRate` are ignored.
+
+#### Declarative playback
+
+For the common case of "play the embedded animation as soon as the model loads", use the [`autoPlay`](#autoplay) and [`loop`](#loop) props and no JavaScript:
+
+```jsx
+import { Model } from "@webspatial/react-sdk";
+
+function IdleRobot() {
+  return <Model src="/modelasset/robot.glb" autoPlay loop enable-xr />;
+}
+```
+
+#### Imperative playback
+
+For user-controlled playback, seeking, or speed changes, call the API through a ref:
+
+```jsx
+import { useRef } from "react";
+import { Model } from "@webspatial/react-sdk";
+
+function RobotPlayer() {
+  const modelRef = useRef(null);
+
+  return (
+    <>
+      <Model
+        ref={modelRef}
+        src="/modelasset/robot.glb"
+        loop
+        enable-xr
+        style={{ height: "200px", "--xr-depth": "100px" }}
+        onLoad={() => console.log("duration:", modelRef.current.duration)}
+      />
+      <button onClick={() => modelRef.current.play()}>Play</button>
+      <button onClick={() => modelRef.current.pause()}>Pause</button>
+      <button onClick={() => (modelRef.current.currentTime = 2)}>
+        Seek to 2s
+      </button>
+      <button onClick={() => (modelRef.current.playbackRate = 0.5)}>
+        Half speed
+      </button>
+    </>
+  );
+}
+```
+
+#### Runtime support
+
+Playback features are capabilities of the WebSpatial Runtime and are not all available in every runtime version. Use `WebSpatialRuntime.supports` with the `Model` key and the feature names to check before relying on them:
+
+```js
+import { WebSpatialRuntime } from "@webspatial/react-sdk";
+
+WebSpatialRuntime.supports("Model", ["autoplay", "loop"]);
+WebSpatialRuntime.supports("Model", ["play", "pause", "paused"]);
+WebSpatialRuntime.supports("Model", ["duration", "playbackRate", "currentTime"]);
+```
+
+The recognized feature names are `autoplay`, `loop`, `play`, `pause`, `paused`, `duration`, `playbackRate`, and `currentTime`. The feature name for the `autoPlay` prop is lowercase `autoplay`. The call returns `true` only when every listed feature is supported, and `false` in ordinary browsers.
+
+When `<Model>` [falls back](#fallback) to the standard `<model>` element, playback support depends on the browser's implementation of that element, not on WebSpatial.

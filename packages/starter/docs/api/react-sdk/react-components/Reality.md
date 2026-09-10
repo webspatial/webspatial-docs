@@ -51,12 +51,12 @@ The second is [3D asset declarations](#3d-assets), such as `<Material>`. These R
 
 The following 3D asset declarations can appear among the top-level children of `<Reality>`:
 
-1. Predeclared materials can be referenced.
+1. Predeclared materials can be referenced. See [Materials](#materials) for the supported material types.
 
 ```js
 <Reality>
   <Material type="unlit" id="solid" color="#00ff00" />
-  <Material type="unlit" id="glass" color="#0000ff" transparent opacity={0.5} />
+  <Material type="pbr" id="steel" color="#c0c0c0" metalness={1} roughness={0.2} />
   <World>
 ```
 
@@ -72,17 +72,116 @@ The following 3D asset declarations can appear among the top-level children of `
   <World>
 ```
 
-3. 2D HTML/CSS content to be attached onto an Entity can be declared.
+3. 2D HTML/CSS content to be attached onto an Entity can be declared. See [Attachment Entity](#attachment-entity).
 
 ```js
 <Reality>
-  <AttachmentAsset name="info">
+  <AttachmentAsset id="info">
     <div style={{ width: '100%' }}>
       <p>Some text</p>
     </div>
   </AttachmentAsset>
   <World>
 ```
+
+## Materials
+
+A material is declared once as a top-level child of `<Reality>` with a unique `id`, then referenced from any number of Entities through their `materials` prop. Changing a material's props after mount updates every Entity that uses it.
+
+There are two material types. `<Material type="...">` dispatches to the matching dedicated component, so `<Material type="unlit">` and `<UnlitMaterial>` are equivalent, and `<Material type="pbr">` and `<PBRMaterial>` are equivalent.
+
+```js
+import { Material, UnlitMaterial, PBRMaterial, MaterialPresets } from "@webspatial/react-sdk";
+```
+
+### Unlit Material
+
+An unlit material is flat-shaded: it shows its color or texture as-is and ignores scene lighting. Use it for UI-like surfaces, markers, and anything that must look identical regardless of the environment.
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Required. The name Entities use in `materials`. |
+| `color` | `string` | CSS color string, for example `"#00ff00"`. |
+| `textureId` | `string` | `id` of a [`<Texture>`](#textures) to show on the surface; `color` then acts as a tint. |
+| `transparent` | `boolean` | Enables alpha blending so `opacity` takes effect. |
+| `opacity` | `number` | `0` to `1`. |
+
+```js
+<Reality>
+  <UnlitMaterial id="solid" color="#00ff00" />
+  <UnlitMaterial id="glass" color="#0000ff" transparent opacity={0.5} />
+  <World>
+    <Box materials={["glass"]} width={0.2} height={0.2} depth={0.2} />
+  </World>
+</Reality>
+```
+
+### PBR Material
+
+A physically based rendering (PBR) material responds to the lighting of the space it is displayed in, so surfaces read as metal, plastic, glass, or matte. `metalness` and `roughness` follow the same conventions as common 3D engines.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `string` | | Required. The name Entities use in `materials`. |
+| `color` | `string` | `"#FFFFFF"` | Base color as a CSS color string. Acts as a tint when `textureId` is set. |
+| `textureId` | `string` | | `id` of a [`<Texture>`](#textures) used as the base color texture. |
+| `metalness` | `number` | `0` | `0` is a non-metal (dielectric) surface, `1` is a full metal. |
+| `roughness` | `number` | `0.5` | `0` is mirror smooth, `1` is fully rough (diffuse). |
+| `transparent` | `boolean` | `false` | Enables alpha blending so `opacity` takes effect. |
+| `opacity` | `number` | `1` | `0` to `1`. Only used when `transparent` is `true`. |
+
+```js
+<Reality>
+  <PBRMaterial id="steel" color="#c0c0c0" metalness={1} roughness={0.2} />
+  <PBRMaterial id="rubber" color="#222222" metalness={0} roughness={0.9} />
+  <Material type="pbr" id="tinted-glass" color="#aaddff" roughness={0.05} transparent opacity={0.2} />
+  <World>
+    <Sphere radius={0.1} materials={["steel"]} position={{ x: -0.25, y: 0, z: 0 }} />
+    <Sphere radius={0.1} materials={["rubber"]} />
+    <Sphere radius={0.1} materials={["tinted-glass"]} position={{ x: 0.25, y: 0, z: 0 }} />
+  </World>
+</Reality>
+```
+
+#### Material Presets
+
+`MaterialPresets` is a plain object of tuned `metalness` / `roughness` (and, for glass, `transparent` / `opacity`) starting points. Spread a preset into a PBR material and override individual props as needed:
+
+| Preset | Intended look |
+| --- | --- |
+| `matte` | Wood, fabric, paper, concrete |
+| `glossy` | Polished plastic, lacquer |
+| `plastic` | General plastic surfaces |
+| `metal` | Chrome, steel, aluminum |
+| `glass` | Windows, bottles, lenses (transparent) |
+
+```js
+<PBRMaterial id="car-paint" {...MaterialPresets.metal} color="#c0392b" />
+<PBRMaterial id="window" {...MaterialPresets.glass} />
+```
+
+Presets do not include `color` or `textureId`; they are pure data and can be inspected or extended in JavaScript.
+
+### Textures
+
+A texture is an image declared as a top-level child of `<Reality>` with a unique `id`. Both material types reference it through `textureId`.
+
+```js
+<Reality>
+  <Texture id="wood-grain" url="/textures/wood.jpg" onLoad={() => {}} onError={() => {}} />
+  <PBRMaterial id="oak" textureId="wood-grain" {...MaterialPresets.matte} />
+  <World>
+    <Box materials={["oak"]} width={0.3} height={0.05} depth={0.3} />
+  </World>
+</Reality>
+```
+
+If the referenced texture has not loaded yet, or fails to load, the material renders with `color` only and picks up the texture automatically once it becomes available.
+
+> [!CAUTION]
+> **Runtime support for PBR materials**
+>
+> Unlit materials are supported by every WebSpatial Runtime. PBR materials require a newer WebSpatial Runtime and a `@webspatial/react-sdk` release later than `2.0.0`; they are currently available on visionOS only. Check `WebSpatialRuntime.supports("Material", ["pbr"])` before declaring one and fall back to an unlit material when it returns `false`. What an unsupported runtime renders for a PBR material is not defined.
 
 ## 3D Entity
 
@@ -93,8 +192,8 @@ The following 3D asset declarations can appear among the top-level children of `
   // Position: x (left/right), y (down/up), z (away/toward)
   position={{ x: 0.1, y: -0.2, z: 0.3 }}
 
-  // Rotation: radians (Math.PI = 180°)
-  rotation={{ x: 0, y: Math.PI / 2, z: 0 }}  // 90° on Y-axis
+  // Rotation: degrees (360 = full turn)
+  rotation={{ x: 0, y: 90, z: 0 }}  // 90° on Y-axis
 
   // Scale: 1 = normal, 2 = double, 0.5 = half
   scale={{ x: 1, y: 2, z: 1 }}  // stretched vertically
@@ -218,8 +317,64 @@ function SpaceshipFleet() {
 }
 ```
 
-For animation requirements, you can implement them by polling and updating Transform props with JS.
-Example:
+`<ModelEntity>` supports the same [Transform props](#3d-entity) as every other Entity, so it can be positioned, rotated, scaled, and [animated](#animation) like a primitive. It does not expose playback controls for animation authored inside the model file. To play that kind of animation, use [`<Model>`](./Model.md#animation-playback-api) instead.
+
+## Animation
+
+Three different things can be animated in and around `<Reality>`. They use different APIs and are not interchangeable.
+
+| I want to... | Use |
+| --- | --- |
+| Play an animation authored inside a 3D model file, such as a skeletal or keyframe animation exported in a GLB or USDZ file | The [`<Model>` playback API](./Model.md#animation-playback-api). `<ModelEntity>` does not expose playback controls for embedded animation in the current version. |
+| Move, rotate, or scale an Entity inside `<Reality>` over time | [`useEntityAnimation()`](../js-api/useEntityAnimation.md) with the Entity's `animation` prop. Experimental. |
+| Drive Transform props with custom logic that the animation API does not cover, such as physics, gesture following, or procedural motion | Ordinary React state updates, for example from `requestAnimationFrame`. |
+
+### Entity Transform Animation
+
+[`useEntityAnimation()`](../js-api/useEntityAnimation.md) animates `position`, `rotation`, and `scale` of any Entity natively in the WebSpatial Runtime. Describe the start pose, end pose, duration, and easing once. The runtime interpolates every frame without re-rendering the React component.
+
+```jsx
+import { Reality, World, ModelAsset, ModelEntity } from "@webspatial/react-sdk";
+import { useEntityAnimation } from "@webspatial/react-sdk/experimental";
+
+function SpinningShip() {
+  const [animation, api, entityProps] = useEntityAnimation({
+    from: { rotation: { y: 0 } },
+    to: { rotation: { y: 360 } },
+    duration: 4,
+    timingFunction: "linear",
+    loop: true,
+  });
+
+  return (
+    <Reality style={{ width: "100%", height: "500px" }}>
+      <ModelAsset id="ship-blueprint" src="https://example.com/fighter-jet.usdz" />
+      <World>
+        <ModelEntity
+          model="ship-blueprint"
+          position={{ x: 0, y: 0, z: 0 }}
+          {...entityProps}
+          animation={animation}
+        />
+      </World>
+    </Reality>
+  );
+}
+```
+
+- Pass the returned `animation` to the Entity's `animation` prop. One animation binds to exactly one Entity.
+- Spread `entityProps` after the static Transform props so the Entity keeps its last confirmed pose after the animation stops.
+- Control playback with `api.play()`, `api.pause()`, `api.stop()`, `api.reset()`, and `api.finish()`.
+- While the animation is playing, delayed, or paused, the runtime owns the whole transform of that Entity and ignores ordinary Transform prop updates.
+
+> [!CAUTION]
+> **Experimental API with varying runtime support**
+>
+> `useEntityAnimation` is imported from `@webspatial/react-sdk/experimental` and may still change. Runtime support also varies: check `WebSpatialRuntime.supports("useEntityAnimation")` before rendering a component that calls the hook, and render the Entity at its final pose with static props when it returns `false`. See the [`useEntityAnimation`](../js-api/useEntityAnimation.md) page for the full API, playback states, and limitations.
+
+### Custom Frame-by-Frame Animation
+
+Direct React updates of Transform props remain available for logic the animation API does not provide: reacting to gestures, physics, procedural motion, or driving several Entities from one shared clock. Each state update sends a new transform to the runtime, so keep the per-frame work small.
 
 ```js
 const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
@@ -227,7 +382,7 @@ const [rotation, setRotation] = useState({ x: 0, y: 0, z: 0 });
 useEffect(() => {
   let id;
   function animate() {
-    setRotation(prev => ({ ...prev, y: prev.y + 0.02 }));
+    setRotation((prev) => ({ ...prev, y: prev.y + 1 })); // degrees per frame
     id = requestAnimationFrame(animate);
   }
   animate();
@@ -237,20 +392,38 @@ useEffect(() => {
 <Box rotation={rotation} />;
 ```
 
+Do not combine this approach with an active `useEntityAnimation` on the same Entity. Prefer `useEntityAnimation` whenever the motion can be expressed as a start pose, an end pose, and keyframes.
+
+> [!NOTE]
+> **Animating the container itself**
+>
+> Transform props and `useEntityAnimation` move content inside the 3D space of `<Reality>`. Animating the `<Reality>` element itself as a 2D plane in the page, like any other spatialized HTML element, is a separate experimental capability: the `useAnimation()` hook from `@webspatial/react-sdk/experimental`, bound through the element's `xr-animation` prop and gated by `WebSpatialRuntime.supports("useAnimation")`.
+
 ## Attachment Entity
 
-`<AttachmentEntity>` is an Entity similar to `<Plane>`. It can reference [predeclared 2D HTML/CSS content](#3d-assets) and attach that content onto its own surface.
+`<AttachmentEntity>` is a 2D surface, similar to `<Plane>`, that displays [predeclared 2D HTML/CSS content](#3d-assets) inside the 3D space. The content stays part of the page's React tree, so it shares props, context, and state with the rest of the app: a button inside an attachment can update state that the rest of the page reads, and vice versa.
 
-> [!CAUTION]
-> **Current limitation**
->
-> In a later version of WebSpatial SDK, `<AttachmentEntity>` will support `width` and `height` like `<Plane>` does, which it does not currently support, and full [Transform props](#3d-entity), whereas the current version only supports `position`. For now, you need to use the `size` prop to set the size, with the same `px` unit used by 2D content.
+The content is declared once with `<AttachmentAsset id="...">` as a top-level child of `<Reality>`. Any number of `<AttachmentEntity>` components can reference that `id`, and each one renders its own copy of the content.
+
+`<AttachmentEntity>` must be placed inside `<World>` as a descendant of an `<Entity>` (or any other Entity). It follows that parent's transform, so moving the parent moves the attachment. Placing it directly under `<World>` renders nothing.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `attachment` | `string` | | Required. The `id` of the `<AttachmentAsset>` to display. Can change at runtime. |
+| `position` | `{ x, y, z }` | `{ x: 0, y: 0, z: 0 }` | Position relative to the parent Entity, in meters. |
+| `rotation` | `{ x, y, z }` | `{ x: 0, y: 0, z: 0 }` | Euler rotation in degrees, like other [Transform props](#3d-entity). |
+| `scale` | `{ x, y, z }` | `{ x: 1, y: 1, z: 1 }` | Scale multipliers. |
+| `width` | `number` | runtime default | Width of the surface in meters. |
+| `height` | `number` | runtime default | Height of the surface in meters. |
+| `cornerRadius` | `number` | `0` | Uniform corner radius in `px`, the same unit the 2D content uses. The content is clipped to the rounded rectangle. Negative values are treated as `0`. |
+| `backgroundMaterial` | `string` | `"transparent"` | Background behind the content. Accepts the same values as [`background-material`](../css-api/background-material.md): `none`, `transparent`, `translucent`, `thin`, `regular`, `thick`. |
 
 ```js
-<Reality>
-  <AttachmentAsset name="info">
-    <div style={{ width: "100%" }}>
+<Reality style={{ width: "500px", height: "500px", "--xr-depth": 200 }}>
+  <AttachmentAsset id="info">
+    <div style={{ width: "100%", padding: "8px" }}>
       <p>Some text</p>
+      <button onClick={() => console.log("clicked in 3D")}>Tap</button>
     </div>
   </AttachmentAsset>
   <World>
@@ -258,10 +431,31 @@ useEffect(() => {
     <Entity position={{ x: -0.5, y: -0.2, z: 0.3 }}>
       <AttachmentEntity
         attachment="info"
-        position={{ x: 0, y: 0, z: 0 }}
-        size={{ width: 100, height: 100 }}
+        position={{ x: 0, y: 0.15, z: 0 }}
+        rotation={{ x: 0, y: 20, z: 0 }}
+        width={0.3}
+        height={0.15}
+        cornerRadius={16}
+        backgroundMaterial="translucent"
       />
     </Entity>
   </World>
 </Reality>
 ```
+
+Behavior to keep in mind:
+
+- Every prop can change at runtime. Updates are applied in place; the attachment surface is not recreated.
+- The HTML content fills the attachment surface. Size the content with CSS relative to that surface, not with fixed pixel dimensions that assume a page layout.
+- Styles from the page's `<head>` (stylesheets and `<style>` blocks, including ones injected later) and the root element's class names are mirrored into the attachment, so global CSS and utility classes work inside it.
+- Attachments are 2D surfaces only. They accept no child Entities, `materials`, or spatial event handlers, and `useEntityAnimation` cannot be bound to them. Spatialized HTML elements, `<Model>`, and `<Reality>` placed inside an `<AttachmentAsset>` render as plain HTML.
+
+> [!CAUTION]
+> **Breaking change after 2.0.0**
+>
+> `@webspatial/react-sdk` releases later than `2.0.0` change this API. Older code must be migrated:
+>
+> - `<AttachmentAsset name="...">` becomes `<AttachmentAsset id="...">`.
+> - `position={[x, y, z]}` becomes `position={{ x, y, z }}`.
+> - `size={{ width, height }}` in `px` is replaced by `width` and `height` in meters.
+> - `rotation`, `scale`, `cornerRadius`, and `backgroundMaterial` are new.
