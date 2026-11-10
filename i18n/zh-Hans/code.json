@@ -57,7 +57,7 @@
     "message": "让 Web 进入你身处的空间"
   },
   "homepage.banner.desc": {
-    "message": "在广泛采用的开放标准 Web 技术中引入原生空间应用的 UI 能力和新一代开发范式，让 Web 突破屏幕进入现实空间，让主流 Web 生态和 Web 开发者能无缝进入空间计算和多模态 AI 的时代。"
+    "message": "在广泛采用的开放标准 Web 技术中引入原生空间应用的 UI 能力和新一代开发范式，让 Web 突破屏幕进入现实空间，帮助主流 Web 生态和 Web 开发者走进空间计算和多模态 AI 的时代。"
   },
   "homepage.banner.button": {
     "message": "快速开始"
@@ -69,10 +69,10 @@
     "message": "正在加载主页所需资源。"
   },
   "homepage.section1.title": {
-    "message": "一个应用，覆盖所有设备，从屏幕走向空间"
+    "message": "同一套 Web 技术栈，从屏幕走向空间"
   },
   "homepage.section1.desc": {
-    "message": "一套代码同时交付桌面和移动端的 2D UI，并在空间计算设备上进一步解锁空间化 UI。"
+    "message": "用你已经熟悉的 Web 技术栈构建：2D UI 继续服务桌面和移动端屏幕，并可在受支持的空间计算设备上适配为空间化 UI。"
   },
   "homepage.section1.largeScreen": {
     "message": "大屏"
@@ -114,7 +114,7 @@
     "message": "继续写 Web，直接交付空间应用"
   },
   "homepage.section3.desc": {
-    "message": "继续使用你已经熟悉的 React、CSS、JS 和 Web 开发工具。WebSpatial 只为现有 Web 技术栈补充一组精简的空间 API，可以直接接入标准 Web 项目，以极少代码改动解锁原生级空间能力。"
+    "message": "继续使用你已经熟悉的 React、CSS、JS 和 Web 开发工具。WebSpatial 只为现有 Web 技术栈补充一组精简的空间 API，能接入标准 Web 项目，通过少量明确的代码改动解锁原生空间能力。"
   },
   "homepage.section3.card.title": {
     "message": "从熟悉的方式开始"
@@ -129,7 +129,7 @@
     "message": "对 HTML、CSS 和 JS 的开放且精简的扩展，为 Web 增加抬升、多场景、3D 容器等空间能力。"
   },
   "homepage.section4.card2.desc": {
-    "message": "一个可直接接入 React 项目的库，立刻解锁 WebSpatial API，让你继续用熟悉的 React 组件和现有生态来构建空间应用。"
+    "message": "一个可接入 React 项目的库，用于解锁 WebSpatial API，让你继续用熟悉的 React 组件和现有生态来构建空间应用。"
   },
   "homepage.section4.card3.desc": {
     "message": "一个 CLI 工具，可将启用了 WebSpatial 的 React 项目打包成可安装的原生空间应用，用平台专属的 App Shell 包裹 Web 代码并运行 WebSpatial API。"

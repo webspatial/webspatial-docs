@@ -12,7 +12,7 @@ export default {
     title: t('homepage.banner.title', 'Bring Your Web to Space.'),
     desc: t(
       'homepage.banner.desc',
-      'Bring native-level spatial UI capabilities and a new development paradigm to widely adopted open Web technologies, enable the mainstream Web ecosystem and Web developers to move seamlessly into the era of spatial computing and multimodal AI.',
+      'Bring native-level spatial UI capabilities and a new development paradigm to widely adopted open Web technologies, helping the mainstream Web ecosystem and Web developers move into the era of spatial computing and multimodal AI.',
     ),
     imgUrl: getFakeImg(1280, 1280),
     button: {
@@ -23,11 +23,11 @@ export default {
   section1: {
     title: t(
       'homepage.section1.title',
-      'One App, Every Device, From Screen to Spatial',
+      'One Web Stack, From Screen to Spatial',
     ),
     desc: t(
       'homepage.section1.desc',
-      'One codebase delivers 2D UI on desktop and mobile screens, then unlocks Spatialized UI on spatial-computing devices.',
+      'Build with the web stack you already know: keep your 2D UI on desktop and mobile screens, and adapt it into Spatialized UI on supported spatial-computing devices.',
     ),
     children: [
       {
@@ -131,7 +131,7 @@ export default {
     title: t('homepage.section3.title', 'Keep Coding Web, Ship Spatial'),
     desc: t(
       'homepage.section3.desc',
-      'Keep coding with React, CSS, JS and the web-dev tools you already know. WebSpatial extends your existing web stack with a minimal set of new spatial APIs, drops straight into standard Web projects, and unlocks native-grade spatial power with almost no code changes.',
+      'Keep coding with React, CSS, JS and the web-dev tools you already know. WebSpatial extends your existing web stack with a minimal set of new spatial APIs, integrates into standard Web projects, and unlocks native spatial capabilities with a small set of explicit code changes.',
     ),
     children: [
       {
@@ -177,7 +177,7 @@ export default {
         title: 'WebSpatial SDK',
         desc: t(
           'homepage.section4.card2.desc',
-          'A drop-in library for React projects that instantly unlocks WebSpatial APIs, and lets you build spatial apps with the same React components and ecosystem you already use.',
+          'A library that integrates into React projects to unlock WebSpatial APIs, and lets you build spatial apps with the same React components and ecosystem you already use.',
         ),
         moreUrl: '/docs/introduction/getting-started#webspatial-sdk',
         background:
