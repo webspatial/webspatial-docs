@@ -9,7 +9,7 @@ description: '理解“2D 包含 3D”范式，以及静态和动态 3D 容器�
 
 WebXR API 虽然能用 WebGL 在 3D 空间中渲染有体积的 3D 内容，但这些内容[只能在 WebXR session 中显示](./webspatial-app.md)，无法作为 3D HTML 元素参与 HTML/CSS 体系、在 Web App 里直接显示。
 
-[WebSpatial API](../introduction/getting-started.md#webspatial-api) 在现有 HTML 标准基础上新增了两种真正的 3D HTML 元素，这些元素都是[空间化 HTML 元素](./spatialized-html-elements.md)，作为空间中悬浮的 2D 面片使用，继续参与 HTML/CSS 布局系统，跟空间化的 2D HTML 元素具备相同能力和用法，但除此之外，还能在 2D 面片前方的局部空间中，用 [3D 开发范式](#3d-engine-api)实现有真正体积的 3D 内容，支持[统一渲染](./spatial-computing.md#unified-rendering)，让 3D 内容[能跟 2D 内容融合共存](#2d-containing-3d)。
+[WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk) 提供 `<Model>` 和 `<Reality>` 两种 React 组件作为体积 3D 容器。空间渲染需要受支持的 WebSpatial Runtime，它们不是普通浏览器内置的 HTML 元素。请检查 [Runtime 要求](../introduction/getting-started.md#supported-platforms)和 [Model 回退要求](../api/react-sdk/react-components/Model.md#fallback)。这些元素都是[空间化 HTML 元素](./spatialized-html-elements.md)，作为空间中悬浮的 2D 面片使用，继续参与 HTML/CSS 布局系统，跟空间化的 2D HTML 元素具备相同能力和用法，但除此之外，还能在 2D 面片前方的局部空间中，用 [3D 开发范式](#3d-engine-api)实现有真正体积的 3D 内容，支持[统一渲染](./spatial-computing.md#unified-rendering)，让 3D 内容[能跟 2D 内容融合共存](#2d-containing-3d)。
 
 3D 容器元素除了能基于现有 Web 标准决定 2D 面片的宽和高，还能用 WebSpatial API 新增的 CSS 属性[设置 2D 面片前方局部 3D 空间的深度](../api/react-sdk/css-api/depth.md)，可以用新增的 DOM API [查询当前的深度](../api/react-sdk/dom-api/clientDepth.md)。
 
@@ -27,15 +27,15 @@ WebXR API 虽然能用 WebGL 在 3D 空间中渲染有体积的 3D 内容，但�
 
 为了让[空间计算](./spatial-computing.md)操作系统和 [Spatial Runtime](./spatial-computing.md#spatial-runtime) 能理解动态 3D 容器中的 3D 内容，能把它们跟空间中其他 2D/3D 内容一起做[统一渲染](./spatial-computing.md#unified-rendering)，不能在动态 3D 容器的内容中直接使用 WebGL/WebGPU 和基于这些底层 3D 图形 API 的任意 Web 3D 引擎。
 
-WebSpatial API 中内置了一套结合了 ECS 风格和 HTML 风格的声明式 3D 引擎 API，支持统一渲染。
+WebSpatial SDK 通过采用 JSX 语法的 React 组件提供声明式 3D 引擎 API。ECS 风格的实体和统一渲染由受支持的 Runtime 实现；JSX 语法不代表浏览器原生支持这些元素。
 
-这套 API 用 HTML 元素的形式提供[各种开箱即用的 3D Entity](../api/react-sdk/react-components/Reality.md#3d-entity)，这些 Entity 的底层实现中基于 ECS 架构内置了不同的 Component 能力（ECS 的概念，不是指 UI Component），这些 Component 能力可以通过 HTML 属性使用，比如可以引用[提前声明好的 3D 资产](../api/react-sdk/react-components/Reality.md#3d-assets)、设置[几何物体](../api/react-sdk/react-components/Reality.md#primitive-entities)的尺寸等。
+这套 API 以 WebSpatial SDK React 组件的形式提供[各种开箱即用的 3D Entity](../api/react-sdk/react-components/Reality.md#3d-entity)，这些 Entity 的底层实现中基于 ECS 架构内置了不同的 Component 能力（ECS 的概念，不是指 UI Component），这些 Component 能力可以通过 React props 配置，比如可以引用[提前声明好的 3D 资产](../api/react-sdk/react-components/Reality.md#3d-assets)、设置[几何物体](../api/react-sdk/react-components/Reality.md#primitive-entities)的尺寸等。
 
-这些 HTML 元素只能在动态 3D 容器中[作为 Scene Graph 根节点的 `<World>`](../api/react-sdk/react-components/Reality.md#scene-graph) 中使用，不支持 CSS 和 2D 布局系统，而是采用 3D 引擎体系中的 [Transform 属性](../api/react-sdk/react-components/Reality.md#3d-entity)在 3D 坐标系中渲染。
+这些 React 组件只能在动态 3D 容器中[作为 Scene Graph 根节点的 `<World>`](../api/react-sdk/react-components/Reality.md#scene-graph) 中使用，不支持 CSS 和 2D 布局系统，而是采用 3D 引擎体系中的 [Transform 属性](../api/react-sdk/react-components/Reality.md#3d-entity)在 3D 坐标系中渲染。
 
 这些 3D Entity 不仅可以通过动态 3D 容器融入到 2D 布局体系和 HTML/CSS 内容中，还可以在 Entity 上[附着 HTML/CSS 内容](../api/react-sdk/react-components/Reality.md#attachment-entity)，让 2D 内容也能进入 3D 渲染体系。
 
-这些[在 `<Reality>` 内部使用的 HTML 元素](../api/react-sdk/react-components/Reality.md)在 [WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk) 中同样以 React 组件的形式提供。
+这些[在 `<Reality>` 内部使用的 SDK 组件](../api/react-sdk/react-components/Reality.md)在 [WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk) 中同样以 React 组件的形式提供。
 
 ## 2D 包含 3D {#2d-containing-3d}
 

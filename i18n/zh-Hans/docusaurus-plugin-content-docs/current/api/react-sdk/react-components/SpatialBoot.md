@@ -24,9 +24,9 @@ function AppRoot() {
 它帮你做了什么：
 
 - 在空间计算平台上（也就是在 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime) 中），它会在后台加载空间能力，一切就绪后再展示你的内容。
-- 在普通浏览器中，它会直接展示你的内容，完全跳过加载——访问者不会下载任何多余的空间代码，网站保持原来的速度和行为。
+- 在普通浏览器中，它会渲染内容而不加载空间实现。请在支持的浏览器中测试 2D 布局、输入、回退内容和性能；跳过该实现不保证零开销或行为不变。
 
-换句话说，你不需要自己写任何平台判断逻辑。加一次 `<SpatialBoot>`，同一份代码就能在所有平台上正常工作。
+`<SpatialBoot>` 负责加载时的 Runtime 检测。各空间功能仍取决于 SDK 和 Runtime 版本，请使用能力检测并在需要时提供替代方案。详见[支持的平台](../../../introduction/getting-started.md#supported-platforms)。
 
 :::note[从旧版 SDK 升级？]
 现在所有 API 都从同一个入口导入：`@webspatial/react-sdk`。如果你的代码还在使用旧的深层导入路径（`@webspatial/react-sdk/web`、`@webspatial/react-sdk/default`）或旧的 `SSRProvider` 组件，请更新它们——这些都已不存在，`SSRProvider` 由 `<SpatialBoot>` 取代。

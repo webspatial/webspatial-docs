@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './Section.module.scss';
 type Props = {
   title: string;
-  desc: string;
+  desc: React.ReactNode;
   children?: React.ReactNode;
 };
 const Section: React.FC<Props> = ({title, desc, children}) => {

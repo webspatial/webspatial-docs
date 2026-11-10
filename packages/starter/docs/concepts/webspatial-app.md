@@ -9,7 +9,7 @@ A [Web App](#web-app) that uses the [WebSpatial API](../introduction/getting-sta
 
 A WebSpatial App is an enhancement of a standard Web App, and that enhancement is activated only under suitable conditions.
 
-If the same Web App runs on platforms that do not support spatial computing, such as browsers on desktop computers or phones, it is still a normal webpage or PWA with no spatial computing effects, and WebSpatial does not affect it.
+Without a supported WebSpatial Runtime, the Web App renders as a normal webpage or PWA without spatial effects. `<SpatialBoot>` skips loading the spatial implementation. Developers must provide and test suitable 2D content and interactions; fallback does not guarantee unchanged behavior or performance.
 
 For the same Web App to run as a WebSpatial App and enable spatial computing capabilities, the operating system must support spatial computing and unified rendering, and the runtime environment must also include WebSpatial Runtime.
 Current browser UIs are designed for screen-based devices and for efficiently browsing multiple 2D webpages. They conflict with spatial app UI patterns such as transparent backgrounds and UI elements that float or protrude in space. Because of that, those browsers, such as Safari on visionOS and the default browser on PICO OS 6, cannot currently include WebSpatial Runtime and will run such a Web App as a normal webpage.
@@ -47,7 +47,7 @@ In other words, WebSpatial Runtime is always built into a Web Runtime and is par
 
 WebSpatial Runtime builds on top of a [Web Runtime](#web-runtime) and additionally implements the [WebSpatial API](../introduction/getting-started.md#webspatial-api). It exposes the operating system's [spatial computing](./spatial-computing.md#unified-rendering) capabilities to [standard Web Apps](#web-app), so those apps are enhanced when running on such systems.
 
-Eventually, WebSpatial Runtime will be implemented entirely inside browser engines. But at the current stage, to make the proposed WebSpatial standards available immediately, the implementation combines browser engines and hybrid techniques, and must be used together with the [WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk).
+The current WebSpatial Runtime combines browser engines with hybrid techniques and works together with the [WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk). Proposed APIs are implemented by this SDK/runtime combination; native browser support is a separate capability.
 
 Some spatial computing operating systems include WebSpatial Runtime, such as [PICO OS 6](https://developer.picoxr.com/document/web/web-app/). On those platforms, standard Web Apps that use WebSpatial SDK can run independently by URL and enable spatial computing directly.
 

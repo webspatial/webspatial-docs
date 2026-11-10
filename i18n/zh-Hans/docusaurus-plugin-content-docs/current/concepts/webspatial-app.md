@@ -9,7 +9,7 @@ description: '了解标准 Web App 如何在运行时和打包能力配合下变
 
 WebSpatial App 就是对标准 Web App 的增强，这种增强需要在合适的条件下激活。
 
-这种 Web App 如果在不支持空间计算的平台（比如桌面电脑和手机上的浏览器）里运行，仍然是常规的网页或 PWA，不会有空间计算效果，不受 WebSpatial 影响。
+没有受支持的 WebSpatial Runtime 时，Web App 会作为普通网页或 PWA 渲染，不提供空间效果。`<SpatialBoot>` 会跳过空间实现的加载。开发者需要提供并测试合适的 2D 内容和交互；回退不保证行为或性能保持不变。
 
 这种 Web App 要作为 WebSpatial App 运行、启用空间计算能力，除了需要操作系统支持空间计算和统一渲染，还需要有包含 WebSpatial Runtime 的运行环境。
 当前各种 Web 浏览器的 UI 都是针对屏幕设备和高效浏览多个 2D 网页而设计的，跟空间应用的 UI（比如透明背景，UI 元素浮起或凸起、分散在空间中）存在冲突，因此这些 Web 浏览器（比如 visionOS 上的 Safari、PICO OS 6 里的默认浏览器）里暂时无法包含 WebSpatial Runtime，会把这种 Web App 作为普通网页来运行。
@@ -46,7 +46,7 @@ PICO OS 6 里内置 [WebSpatial Runtime](#webspatial-runtime) 的 [Web App Runti
 
 WebSpatial Runtime 在 [Web Runtime](#web-runtime) 的基础上，额外实现了 [WebSpatial API](../introduction/getting-started.md#webspatial-api)，能把操作系统中的[空间计算](./spatial-computing.md#unified-rendering)能力提供给[标准 Web App](#web-app)，让它们在这种系统中运行时获得增强。
 
-WebSpatial Runtime 最终会完全在浏览器引擎中实现。而现阶段为了让拟议中的 WebSpatial 标准能立即可用，在实现中会结合浏览器引擎和 hybrid 技术，必须跟 [WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk) 搭配使用。
+当前 WebSpatial Runtime 结合浏览器引擎和 hybrid 技术，必须与 [WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk) 搭配使用。拟议 API 由 SDK 与 Runtime 共同实现；浏览器原生支持是另一项独立能力。
 
 有些空间计算操作系统内置了 WebSpatial Runtime（比如 [PICO OS 6](https://developer.picoxr.com/document/web/web-app/)），使用了 WebSpatial SDK 的标准 Web App 可以直接通过 URL 在这些平台上独立运行、启用空间计算能力。
 

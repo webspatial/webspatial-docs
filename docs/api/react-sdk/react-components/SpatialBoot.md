@@ -24,9 +24,9 @@ function AppRoot() {
 What it does for you:
 
 - On spatial computing platforms (in a [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime)), it loads the spatial capabilities in the background, then shows your content once everything is ready.
-- In ordinary browsers, it simply shows your content and skips the loading entirely — visitors never download the extra spatial code, and the website stays exactly as fast as before.
+- In ordinary browsers, it renders your content without loading the spatial implementation. Test the 2D layout, input, fallback content, and performance in your supported browsers; skipping that implementation does not guarantee zero overhead or unchanged behavior.
 
-In other words, you don't need to write any platform detection yourself. Add `<SpatialBoot>` once, and the same code works everywhere.
+`<SpatialBoot>` handles runtime detection for loading. Individual spatial features still depend on the SDK and runtime versions, so use capability checks and provide alternatives when needed. See [Supported Platforms](../../../introduction/getting-started.md#supported-platforms).
 
 :::note[Upgrading from an earlier SDK version?]
 Everything is now imported from one place: `@webspatial/react-sdk`. If your code still uses the old deep import paths (`@webspatial/react-sdk/web`, `@webspatial/react-sdk/default`) or the old `SSRProvider` component, update it — those no longer exist, and `<SpatialBoot>` replaces `SSRProvider`.

@@ -5,7 +5,12 @@ description: 'Understand Spatial Scene containers, scene types, initialization, 
 
 # Spatial Scenes
 
-A Spatial Scene, also called a Spatial Container, is the most basic container that a spatial computing operating system provides for [spatial apps](./spatial-computing.md#spatial-app). It is used to enable [unified rendering](./spatial-computing.md#unified-rendering) and provide the [basic capabilities that integrate software with space](./spatial-computing.md). All content in a spatial app must be provided through this kind of container, just as app content in desktop operating systems is provided through windows.
+> [!IMPORTANT]
+> Implementation scope
+>
+> This page describes WebSpatial scene behavior in the supported hybrid runtime, using the visionOS packaged app as the reference for window chrome, resizing, scaling, and initialization restrictions. These are implementation details, not universal rules for spatial operating systems. PICO OS Web App Runtime may differ; check the [versioned support table](../introduction/getting-started.md#supported-platforms) and individual scene-option references.
+
+In WebSpatial, a Spatial Scene, also called a Spatial Container, is a runtime-managed container for app content in space. It connects a webpage to the platform's [unified rendering](./spatial-computing.md#unified-rendering) and window management.
 
 For a [WebSpatial App](./webspatial-app.md), each Spatial Scene is effectively a webpage loaded and run by URL inside an independent "window".
 A WebSpatial App is composed entirely of these "windows", and all content comes from the HTML/CSS/JS code running inside them.
@@ -14,7 +19,7 @@ This kind of "window" does not include browser tabs, an address bar, or similar 
 
 ## Scene Type
 
-Spatial Scenes currently have three types:
+The documented SDK supports `window` and `volume` scenes. The proposed `stage` type is described below but is not supported.
 
 The default is the `window` type. Its main content is a 2D plane floating in space. Users can drag to resize its width and height, subject to [initialization constraints](../api/react-sdk/scene-options/resizability.md), and can drag it to move it in space, subject to the spatial computing logic in the [Spatial Runtime](./spatial-computing.md#spatial-runtime). During movement, it will also always [keep a constant size relative to the user's field of view](../api/react-sdk/scene-options/worldScaling.md), because this type of Spatial Scene primarily serves GUI needs and needs to keep content and text clear and readable.
 
@@ -40,7 +45,7 @@ The third Spatial Scene type is `stage`, which has no bounds and can only be cre
 
 Browser windows in desktop operating systems can use Web APIs to set size and even position in webpage code, and these properties can continue to be controlled and modified.
 
-The integration between a Spatial Scene and the surrounding space, and the associated spatial computing behavior, are managed uniformly by the operating system. So once these containers are created, their own properties, such as size and position, are not allowed to be modified by spatial app code. However, during the initialization phase before a container is created, spatial app code can provide custom initialization properties, such as the [`defaultSize`](../api/react-sdk/scene-options/defaultSize.md), [`resizability`](../api/react-sdk/scene-options/resizability.md), and [`worldScaling`](../api/react-sdk/scene-options/worldScaling.md) mentioned above, to influence the initial state of the Spatial Scene and its subsequent spatial computing behavior.
+In the documented visionOS implementation, the integration between a Spatial Scene and the surrounding space, and the associated spatial computing behavior, are managed uniformly by the operating system. So once these containers are created, their own properties, such as size and position, are not allowed to be modified by spatial app code. However, during the initialization phase before a container is created, spatial app code can provide custom initialization properties, such as the [`defaultSize`](../api/react-sdk/scene-options/defaultSize.md), [`resizability`](../api/react-sdk/scene-options/resizability.md), and [`worldScaling`](../api/react-sdk/scene-options/worldScaling.md) mentioned above, to influence the initial state of the Spatial Scene and its subsequent spatial computing behavior.
 
 In a WebSpatial App, the Spatial Scene type is also configured through custom initialization properties, using the [`type` property](../api/react-sdk/scene-options/type.md).
 

@@ -57,7 +57,7 @@
     "message": "让 Web 进入你身处的空间"
   },
   "homepage.banner.desc": {
-    "message": "在广泛采用的开放标准 Web 技术中引入原生空间应用的 UI 能力和新一代开发范式，让 Web 突破屏幕进入现实空间，让主流 Web 生态和 Web 开发者能无缝进入空间计算和多模态 AI 的时代。"
+    "message": "通过 WebSpatial SDK 和受支持的 Runtime，使用 React、CSS 和 JavaScript 构建空间化 HTML 界面和 3D 内容。"
   },
   "homepage.banner.button": {
     "message": "快速开始"
@@ -69,19 +69,16 @@
     "message": "正在加载主页所需资源。"
   },
   "homepage.section1.title": {
-    "message": "一个应用，覆盖所有设备，从屏幕走向空间"
+    "message": "为空间体验扩展你的 Web 应用。"
   },
   "homepage.section1.desc": {
-    "message": "一套代码同时交付桌面和移动端的 2D UI，并在空间计算设备上进一步解锁空间化 UI。"
+    "message": "空间功能可在 visionOS 打包应用和 PICO OS 6 独立 Web App 中运行。可用能力取决于 SDK 和 Runtime 版本。请在桌面和移动浏览器中测试 2D 体验。"
   },
   "homepage.section1.largeScreen": {
-    "message": "大屏"
+    "message": "桌面 Web"
   },
   "homepage.section1.smallScreen": {
-    "message": "小屏"
-  },
-  "homepage.section1.comingSoon": {
-    "message": "即将支持"
+    "message": "移动 Web"
   },
   "homepage.section2.title": {
     "message": "释放空间创造力，让你的 Web 从 2D 扩展到 3D"
@@ -96,25 +93,25 @@
     "message": "抬升 HTML 元素，解锁纵深"
   },
   "homepage.section2.card2.desc": {
-    "message": "把任意 HTML 元素从平面页面中抬起，无论它是静态还是动态内容，都能沿 Z 轴定位、布局和形变，让界面能超越宽高利用真实世界的纵深。"
+    "message": "把受支持的 HTML 元素从页面平面中抬起，使用 Z 轴布局和变形增加纵深。接入前请查看 SDK 限制。"
   },
   "homepage.section2.card3.title": {
-    "message": "多空间场景，原生空间计算能力"
+    "message": "多个空间场景"
   },
   "homepage.section2.card3.desc": {
-    "message": "把组成 Web App 的多个窗口升级成操作系统管理的空间场景容器，以独立空间应用形态运行，自动获得空间计算能力。"
+    "message": "在 Runtime 管理的空间场景中打开网页，窗口行为和场景选项取决于受支持的平台。"
   },
   "homepage.section2.card4.title": {
     "message": "接入真正的 3D 内容，融合不同维度"
   },
   "homepage.section2.card4.desc": {
-    "message": "引入具备真实体积的 3D 元素，让它们与 2D 元素无缝嵌套和布局，再通过 3D 引擎驱动动态、可交互的 3D 内容。"
+    "message": "在受支持的 WebSpatial Runtime 中，使用 Model 和 Reality SDK 组件把 CSS 布局与静态模型或动态 3D 内容结合起来。"
   },
   "homepage.section3.title": {
     "message": "继续写 Web，直接交付空间应用"
   },
   "homepage.section3.desc": {
-    "message": "继续使用你已经熟悉的 React、CSS、JS 和 Web 开发工具。WebSpatial 只为现有 Web 技术栈补充一组精简的空间 API，可以直接接入标准 Web 项目，以极少代码改动解锁原生级空间能力。"
+    "message": "使用 React、CSS 和 JavaScript 组合空间化 HTML、3D 内容和交互。通过 JSX Runtime 和 SpatialBoot 接入 SDK，然后在各目标 Runtime 上测试可用能力。"
   },
   "homepage.section3.card.title": {
     "message": "从熟悉的方式开始"
@@ -123,16 +120,16 @@
     "message": "探索 WebSpatial 工具链"
   },
   "homepage.section4.desc": {
-    "message": "交付空间应用所需的一切，基于你已经在使用的那些工具。"
+    "message": "探索空间 API、React 集成和 visionOS 打包工具。"
   },
   "homepage.section4.card1.desc": {
     "message": "对 HTML、CSS 和 JS 的开放且精简的扩展，为 Web 增加抬升、多场景、3D 容器等空间能力。"
   },
   "homepage.section4.card2.desc": {
-    "message": "一个可直接接入 React 项目的库，立刻解锁 WebSpatial API，让你继续用熟悉的 React 组件和现有生态来构建空间应用。"
+    "message": "为空间化 HTML 和 3D 内容提供 React 组件和 JSX 集成。可用 API 取决于 SDK、Runtime 版本和项目配置。"
   },
   "homepage.section4.card3.desc": {
-    "message": "一个 CLI 工具，可将启用了 WebSpatial 的 React 项目打包成可安装的原生空间应用，用平台专属的 App Shell 包裹 Web 代码并运行 WebSpatial API。"
+    "message": "一个 CLI 工具，可把启用了 WebSpatial 的 Web 项目打包为自带 WebSpatial Runtime 的 visionOS hybrid app。"
   },
   "homepage.section4.more": {
     "message": "了解更多"
@@ -147,7 +144,7 @@
     "message": "概念"
   },
   "homepage.meta.description": {
-    "message": "WebSpatial 是一套空间 API 和开箱即用的 SDK，可在跨平台场景下把标准 2D Web 生态扩展到空间计算，让整个基于 HTML/CSS 的 Web 世界进入空间时代，在保留原有优势的同时获得接近原生应用（如 visionOS 应用）的空间能力。"
+    "message": "使用 WebSpatial React SDK 构建空间化 HTML 界面和 3D 内容，了解受支持的 Runtime、集成要求和 visionOS hybrid app 打包方式。"
   },
   "Favorite": {
     "message": "Favorite"
@@ -725,5 +722,11 @@
   "theme.SearchPage.fetchingNewResults": {
     "message": "正在获取新的搜索结果...",
     "description": "The paragraph for fetching new search results"
+  },
+  "homepage.section1.visionOS": {
+    "message": "visionOS 打包应用"
+  },
+  "homepage.section1.support": {
+    "message": "查看版本要求和平台限制"
   }
 }
