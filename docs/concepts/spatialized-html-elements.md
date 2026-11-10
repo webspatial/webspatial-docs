@@ -19,6 +19,8 @@ All spatialized HTML elements are effectively 2D planes floating in the space of
 
 WebSpatial API only adds Z-axis-related CSS capabilities and DOM APIs for these spatialized HTML elements, allowing these 2D planes to be [laid out and positioned](../api/react-sdk/css-api/back.md) and [transformed](../api/react-sdk/css-api/transform.md) along the Z axis, and allowing their current related state to be [read](../api/react-sdk/dom-api/offsetBack.md).
 
+## SDK Limitations
+
 :::caution[Current limitation]
 For spatialized HTML elements whose 2D planes rotate or otherwise change in space because of [CSS Transform](../api/react-sdk/css-api/transform.md), WebSpatial SDK does not currently support using [`getBoundingClientRect()`](https://developer.mozilla.org/docs/Web/API/Element/getBoundingClientRect) to obtain their projected bounds, and also does not yet support using `getBoundingClientCube()`, newly added in WebSpatial API, to obtain their 3D bounding-box range in space.
 :::

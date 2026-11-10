@@ -7,19 +7,21 @@ description: '了解 WebSpatial 给 Web 带来的能力、SDK 的工作方式，
 
 ## 概述 {#overview}
 
-WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.webspatial.dev/)，以及 [Polyfill](https://www.w3.org/2001/tag/doc/polyfills/) 风格的开源 [SDK](#webspatial-sdk)，致力于在 Web 标准和现有主流 Web 框架中引入跟[原生空间应用](../concepts/spatial-computing.md#spatial-app)等价的[空间化 UI 能力](#features)和[「2D 包含 3D」范式](#philosophy)的开发者体验，让 HTML 内容在[空间计算](../concepts/spatial-computing.md)平台上能摆脱屏幕的限制、进入现实空间、获得真实体积、支持空间中的自然交互和灵活的 3D 编程，同时不影响 Web 原有的[跨平台能力](#philosophy)、思维方式和[开发方式](#preview)，让主流 Web 生态和 Web 开发者能无缝进入[空间计算和多模态 AI 的时代](https://tpac2025.webspatial.dev/)。
+WebSpatial 提供拟议中的 HTML/CSS/DOM API 扩展和开源 [React SDK](#webspatial-sdk)，用于空间化 HTML、3D 内容和空间交互。当前 SDK 结合 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 通过 hybrid 技术实现这些能力。[「2D 包含 3D」](#philosophy)模型把 CSS 布局与局部 3D 内容结合起来。可用能力取决于 SDK 版本、Runtime 版本和运行模式，详见[支持的平台](#supported-platforms)。网站也可以通过 URL 分发，但空间能力需要受支持的 Runtime。
 
 ## 功能特性 {#features}
 
 ### WebSpatial API {#webspatial-api}
 
-1. **空间场景**：Web App（PWA）的[起始网页](../concepts/spatial-scenes.md#start-scene)和每个[在新窗口打开的自身网页](../concepts/spatial-scenes.md#new-scenes)，都成为了跟空间环境结合的[空间场景容器](../concepts/spatial-scenes.md)，可以对这些容器的空间属性做不同的[初始化设置](../concepts/spatial-scenes.md#scene-initialization)。
+以下能力的 Runtime 要求各不相同。使用前请检查[版本化支持表](#supported-platforms)及对应 API 文档。
+
+1. **空间场景**：在受支持的 Runtime 中，Web App（PWA）的[起始网页](../concepts/spatial-scenes.md#start-scene)和每个[在新窗口打开的自身网页](../concepts/spatial-scenes.md#new-scenes)，都成为了跟空间环境结合的[空间场景容器](../concepts/spatial-scenes.md)，可以对这些容器的空间属性做不同的[初始化设置](../concepts/spatial-scenes.md#scene-initialization)。
 2. **材质化背板**：[平面窗口类型](../concepts/spatial-scenes.md#scene-type)的网页，可以把[背景面板](../api/react-sdk/css-api/background-material.md)设置为原生质感的半透明材质，随视角和环境实时动态渲染，也可以把背景面板设置为完全透明、边框不可见，让网页中各个元素看上去分散漂浮在空间中。
 3. **体积窗口**：可以把网页窗口[在空间中的行为方式](../concepts/spatial-computing.md)，从优先服务于 2D GUI 需求，改成[模拟真实世界中的物体，让窗口像「盒子」一样](../concepts/spatial-scenes.md#scene-type)有真实体积和[深度](../api/react-sdk/dom-api/innerDepth.md)。
-4. **空间化 HTML 元素**：HTML 元素可以被「抬升」到网页平面前方的 3D 空间中，同时继续参与 CSS 布局系统。这些[被空间化](../concepts/spatialized-html-elements.md)的 HTML 元素，一方面[在 X 轴和 Y 轴上的原有状态和 API](../concepts/spatialized-html-elements.md) 都保持不变，另一方面能作为悬浮在空间场景中的 2D 面片，可以有[材质化背板](../api/react-sdk/css-api/background-material.md)，能通过 CSS 在 Z 轴上[布局和定位](../api/react-sdk/css-api/back.md)、在 3D 空间中做旋转等[变形转换](../api/react-sdk/css-api/transform.md)，可以通过 DOM API 获取[相关状态](../concepts/spatialized-html-elements.md)。
+4. **空间化 HTML 元素**：受支持的 HTML 元素可以被「抬升」到网页平面前方的 3D 空间中，同时继续参与 CSS 布局系统。这些[被空间化](../concepts/spatialized-html-elements.md)的 HTML 元素，一方面[在 X 轴和 Y 轴上的原有状态和 API](../concepts/spatialized-html-elements.md) 都保持不变，另一方面能作为悬浮在空间场景中的 2D 面片，可以有[材质化背板](../api/react-sdk/css-api/background-material.md)，能通过 CSS 在 Z 轴上[布局和定位](../api/react-sdk/css-api/back.md)、在 3D 空间中做旋转等[变形转换](../api/react-sdk/css-api/transform.md)，可以通过 DOM API 获取[相关状态](../concepts/spatialized-html-elements.md)。
 5. **材质化背景**：HTML 元素的背景可以设置为[实时渲染的半透明材质](../api/react-sdk/css-api/background-material.md)，而不仅限于固定颜色。
-6. **3D 容器元素**：新增两种 3D HTML 元素，作为有真实体积的 3D 内容的容器。这些 3D 容器元素仍然[作为 2D 面片](../concepts/spatialized-html-elements.md)参与 CSS 布局系统，支持 Z 轴[布局](../api/react-sdk/css-api/back.md)和[变形](../api/react-sdk/css-api/transform.md)，但除此之外还能在 2D 面片前方建立一个基于 [3D 开发范式](../concepts/3d-content-containers.md)的局部空间，在其中渲染有真实体积的 3D 内容，让它们能融入 2D 布局系统和 [2D GUI 框架的渲染机制](https://react.dev/learn/thinking-in-react)，实现[「2D 包含 3D」的开发范式](#philosophy)。
-7. **静态 3D 容器元素**：支持用[预制好的 3D 模型资产文件](../api/react-sdk/react-components/Model.md)来渲染容器中的 3D 内容，这种 3D 容器元素的 API [完全基于 Web 标准中的 model element](../api/react-sdk/react-components/Model.md)。
+6. **3D 容器元素**：提供两种 WebSpatial SDK React 组件，作为有真实体积的 3D 内容的容器。这些 3D 容器元素仍然[作为 2D 面片](../concepts/spatialized-html-elements.md)参与 CSS 布局系统，支持 Z 轴[布局](../api/react-sdk/css-api/back.md)和[变形](../api/react-sdk/css-api/transform.md)，但除此之外还能在 2D 面片前方建立一个基于 [3D 开发范式](../concepts/3d-content-containers.md)的局部空间，在其中渲染有真实体积的 3D 内容，让它们能融入 2D 布局系统和 [2D GUI 框架的渲染机制](https://react.dev/learn/thinking-in-react)，实现[「2D 包含 3D」的开发范式](#philosophy)。
+7. **静态 3D 容器元素**：支持用[预制好的 3D 模型资产文件](../api/react-sdk/react-components/Model.md)来渲染容器中的 3D 内容，这种 3D 容器元素的 API [遵循拟议 model-element API 的一个子集](../api/react-sdk/react-components/Model.md)。
 8. **动态 3D 容器元素**：支持用[可灵活编程的 HTML 风格 3D 引擎 API](../concepts/3d-content-containers.md#3d-engine-api) 来动态渲染容器中的 3D 内容。
 9. **HTML 风格的 3D 引擎 API**：这些 API 包括 [3D 资产声明](../concepts/3d-content-containers.md#3d-engine-api)（模型、材质等），以及内置能力模块、开箱即用的 [3D 实体](../api/react-sdk/react-components/Reality.md)（比如预制的几何形状）。可以通过树状结构和 [Transform 属性](../api/react-sdk/react-components/Reality.md)在 [3D 坐标系](../concepts/3d-content-containers.md#2d-containing-3d)中自由组合这些实体，实现任意 3D 场景和动画效果。
 10. **2D 附着实体**：可以[把 2D HTML 内容附着在面片形状的 3D 实体上](../api/react-sdk/react-components/Reality.md)，让 3D 内容中也可以嵌入全功能的 2D 内容。
@@ -28,11 +30,11 @@ WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.w
 
 ### WebSpatial SDK {#webspatial-sdk}
 
-1. **前瞻性预实现**：结合[原生 Runtime 实现](../concepts/webspatial-app.md#webspatial-runtime)，在 React 项目的 JSX、Ref、CSS 里[提前模拟实现拟议标准](https://www.w3.org/2001/tag/doc/polyfills/)中的 HTML/DOM/CSS API，让 [WebSpatial API](#webspatial-api) 现在就立即可用 ，不用等待各个平台上的浏览器引擎正式支持这些 API。
-2. **跨版本兼容**：屏蔽了 WebSpatial API 进入 Web 标准（HTML/CSS/DOM）过程中的不稳定、变动和平台差异，SDK 提供的 API 始终保持向后兼容，让旧代码一直可运行
-3. **跨平台兼容**：在支持[空间计算和统一渲染](../concepts/spatial-computing.md)的平台上，会尽量屏蔽差异，提供跨平台统一的空间应用概念和空间化 UI 特性。在不支持空间计算和统一渲染的平台上，会自动忽略 WebSpatial API、不加载完整的 SDK 实现，不影响网页在桌面电脑、手机等屏幕设备和普通浏览器里的效果和性能。
-4. **自定义跨平台逻辑**：提供特性检测和 [Runtime 检测](../api/react-sdk/dom-api/userAgent.md)方法，可以对少数无法自动忽略的 JS API / DOM API 调用做自定义的跨平台处理，也可以在空间计算平台上启用自定义的增强效果和专属功能。
-5. **应用打包**：支持把 PWA 打包成[自带 WebSpatial Runtime、无外部依赖](../concepts/webspatial-app.md#packaged-webspatial-app)的原生应用安装包（比如 visionOS 应用），跟原生应用一样能在模拟器或真机设备上安装和[运行调试](#preview)，能[上架到 visionOS App Store 这样的应用商店](#distribution)。
+1. **React 中的拟议 API**：结合[原生 Runtime 实现](../concepts/webspatial-app.md#webspatial-runtime)，SDK 通过 React JSX、Ref 和 CSS 实现空间 API。这些 SDK API 不代表浏览器已原生支持。
+2. **版本要求**：实验性 API 可能变化。升级前请检查所需的 SDK 和 Runtime 版本、[发布说明](https://github.com/webspatial/webspatial-sdk/releases)及 API 限制。
+3. **平台相关行为**：可用功能和行为取决于平台、Runtime 版本和运行模式。没有受支持的 Runtime 时，`<SpatialBoot>` 会渲染应用而不加载空间实现。请在目标普通浏览器中测试布局、交互、回退内容和性能。
+4. **特性检测**：使用能力检测和 [Runtime 检测](../api/react-sdk/dom-api/userAgent.md)保护空间 API 调用，并为不可用的能力提供替代方案。
+5. **应用打包**：PWA 可以打包为[自带 WebSpatial Runtime 的原生应用安装包](../concepts/webspatial-app.md#packaged-webspatial-app)，例如 visionOS 应用。安装包仍依赖平台系统框架和 Web Runtime，可以在受支持的模拟器或设备上[预览调试](#preview)，并[提交到 visionOS App Store](#distribution)。
 
 ## 设计理念 {#philosophy}
 
@@ -41,14 +43,14 @@ WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.w
 3. 在 3D 局部空间中，避免像 WebXR 那样用底层 3D 图形 API 做[独立渲染](https://tpac2025.webspatial.dev/#webxr-not-enough)，而是通过[结合 ECS 和 HTML 的声明式 3D 引擎 API](../concepts/3d-content-containers.md#3d-engine-api)，让空间计算平台能理解这些 3D 内容，能把它们跟其他应用的内容一起在同一个空间做[统一渲染](../concepts/spatial-computing.md#unified-rendering)。
 4. 避免像 [WebXR session](https://developer.picoxr.com/document/web/introduce-webxr-standards/) 那样在单一网页的代码里实现一个[空间应用](../concepts/spatial-computing.md#spatial-app)的所有内容，而是保持多页网站、网页链接、PWA 等标准 Web 开发方式，通过 [Web App Manifest](../concepts/webspatial-app.md#web-app) 和[「在新窗口打开链接」](../concepts/spatial-scenes.md#new-scenes)来提供空间应用整体和[空间容器](../concepts/spatial-scenes.md)的能力。
 5. [SDK](#webspatial-sdk) 对拟议标准中 HTML/CSS/DOM API 的[模拟预实现](https://www.w3.org/2001/tag/doc/polyfills/)要适度，不能过于复杂和不可控，因此只在遵循 [Rules of React](https://react.dev/reference/rules) 的声明式代码中支持修改[空间化样式/状态](../concepts/spatialized-html-elements.md)和[监听空间事件](../concepts/natural-interactions.md#spatial-interactions)，只在通过 [Hook API](https://react.dev/reference/react/hooks) 获取的对象（比如 [Ref](https://react.dev/learn/referencing-values-with-refs)）上支持[读取空间化样式/状态（只读）](../concepts/spatialized-html-elements.md)，不支持[直接选择 DOM 对象](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)、用命令式代码做这些操作。
-6. 让 [SDK](#webspatial-sdk) 能尽可能低成本、以[接近「一键安装」的方式](#installation)整合到现有的标准 Web 项目中，不改变项目[原有的开发流程、构建方式和部署方式](#preview)，确保这个网站在桌面/移动平台和普通浏览器里原有的效果、性能、调试都不受影响。
-7. 在 WebSpatial API 和 SDK 的支持下，Web 开发者做一个全新[空间应用](../concepts/spatial-computing.md#spatial-app)的方式应该跟开发普通网站一样。只要开发者愿意，这个应用仍然能作为一个标准网站来分发，保持 Web 原有的跨平台能力和[基于网址的用法](https://tpac2025.webspatial.dev/#instant-apps)。
+6. [SDK](#webspatial-sdk) 通过 [JSX 配置和初始化](#set-up-your-project)在 React 项目中接入空间 API。具体要求因构建工具和框架而异。请在项目中验证构建、调试流程、普通 2D 行为和性能。
+7. WebSpatial 应用仍可以作为网站通过 [URL 分发](#distribution)。普通网站访问与空间能力支持是两回事：每个目标环境都需要经过测试的 2D 体验，空间增强则需要受支持的 Runtime。
 
 ## 支持的 Web 项目 {#supported-web-projects}
 
-目前 [WebSpatial SDK](#webspatial-sdk) 开源项目提供了 [React SDK](../api/react-sdk/)，只要是用 React 开发的标准网站项目，应该都能通过集成这个 SDK 来启用 [WebSpatial API](#webspatial-api)。
+开源 [WebSpatial SDK](#webspatial-sdk) 提供 [React SDK](../api/react-sdk/)。以下配置已有使用实践；其他 React 框架、插件和依赖组合需要验证。集成 SDK 不代表每个 Runtime 都支持所有 API。
 
-React SDK 需要被集成到 [JSX Runtime](https://www.typescriptlang.org/docs/handbook/jsx.html) 里，在用 TypeScript 的 React 项目中只需要[一行配置](#set-up-your-project)就可以完成（少数 web build tool 需要做[额外配置](../how-to/rspack.md)）。用 JavaScript 的项目[只能在 web build tool 里配置 JSX Runtime](../how-to/non-ts.md)。
+React SDK 需要被集成到 [JSX Runtime](https://www.typescriptlang.org/docs/handbook/jsx.html) 里，在用 TypeScript 的 React 项目中需要[配置 `jsxImportSource`](#set-up-your-project)（少数 web build tool 需要做[额外配置](../how-to/rspack.md)）。用 JavaScript 的项目[只能在 web build tool 里配置 JSX Runtime](../how-to/non-ts.md)。
 目前测试和实践较多的 web build tool 有：
 
 - Vite
@@ -61,20 +63,30 @@ WebSpatial SDK 最新版本暂时有 bug，导致暂时不支持 styled-componen
 
 ## 支持的平台 {#supported-platforms}
 
-目前支持的[空间计算](../concepts/spatial-computing.md)平台有：
+以下支持范围以 [SDK 2.0.0 能力矩阵](https://github.com/webspatial/webspatial-sdk/blob/%40webspatial/react-sdk%402.0.0/packages/core/src/runtime/capability-data.ts)中记录的 Runtime 版本为准，不涵盖所有设备或 OS 版本。Runtime 标识与 OS 版本、npm 包版本相互独立。使用功能前，请检查[发布说明](https://github.com/webspatial/webspatial-sdk/releases)及实际 Runtime 提供的能力。
 
-- ✅ [visionOS](https://developer.apple.com/visionos/)（比如 Vision Pro 设备）：可以用 WebSpatial SDK 把网站打包成包含完整 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 的 [hybrid app](../concepts/webspatial-app.md#packaged-webspatial-app) 上架 App Store，具备原生的空间化效果
-- ✅ [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/) (比如 [Project Swan](https://developer.picoxr.com/blog/pico-developer-special-event-2026/) 设备)：在操作系统里的 [Web App Runtime](https://developer.picoxr.com/zh/document/web/web-app/) 里内置了 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime)，可直接让网站中的 WebSpatial API 生效
+| 平台 | SDK 参考版本 / Runtime 版本 | 运行模式 | 已知限制 |
+| --- | --- | --- | --- |
+| [visionOS](https://developer.apple.com/visionos/) | SDK 2.0.0；`WSAppShell/1.5.0`、`1.6.0`、`1.7.0`、`1.8.0` | 通过 Builder 和 `@webspatial/platform-visionos` 生成的[打包 hybrid app](../concepts/webspatial-app.md#packaged-webspatial-app) | 仅使用 Safari 不会启用 WebSpatial。Model 能力因 Shell 版本而异；文档所述实现中的 WKWebView 不支持 WebXR。 |
+| [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/) | SDK 2.0.0；`PicoWebApp/0.1.1`、`0.1.2`、`0.2.2`、`0.3.1`、`0.4.90` | 在浏览器之外独立运行的 [Web App Runtime](https://developer.picoxr.com/document/web/web-app/)；无需 Builder 打包 | 所列 Runtime 不提供 `xrInnerDepth` 和 `xrOuterDepth`。Model 能力因 Runtime 版本而异。 |
+| 没有 WebSpatial Runtime 的普通浏览器 | 取决于浏览器；无空间 Runtime | 网站或 PWA | 仅提供 2D 体验，需要测试回退行为。`<Model>` 需要浏览器原生支持 model element 或单独引入 polyfill。 |
 
-正在推进 WebSpatial Runtime 实现的空间计算平台有：
+### 能力状态 {#capability-status}
 
-- ⏳ [JSAR Runtime](https://jsar-project.github.io/runtime/)（比如 Rokid 眼镜设备）
-- ⏳ [IRIS OS](https://www.irisview.cn/)
+下表概括同一版本化矩阵。**支持**表示这些版本的 Runtime 声明了该能力；**有限支持**表示仅提供部分能力。即使 Runtime 已支持，实验性 API 仍可能变化。这些状态不代表所有框架和浏览器组合都已通过验证。
 
-计划优先支持、但暂时需等待原生 API 稳定的空间计算平台有：
+| 能力 | 上述 visionOS Runtime | 上述 PICO Runtime |
+| --- | --- | --- |
+| Window 和 volume 场景 | 支持；场景选项取决于 Runtime | 支持；场景选项取决于 Runtime |
+| 空间化 HTML、Z 轴布局、变形、材质背板 | 支持，受 [SDK 限制](../concepts/spatialized-html-elements.md)约束 | 支持，受 [SDK 限制](../concepts/spatialized-html-elements.md)约束 |
+| 静态 3D（`Model`） | 有限支持：`1.5.0` 提供基础加载和变形 API；`1.6.0` 扩展播放能力；`1.7.0` 增加 `poster`、`loading`、`currentTime` | 有限支持：`0.1.1` 提供基础 API；`0.1.2` 增加播放、`poster`、`currentTime`；`0.3.1` 增加 `loading` |
+| 动态 3D、实体和附着实体 | 支持；这些版本不支持附着实体 placement 扩展 | 支持；附着实体 placement 扩展需要 `0.4.90` |
+| 单击、拖拽、旋转、缩放 | 支持；输入映射[因平台而异](../concepts/natural-interactions.md) | 支持；输入映射[因平台而异](../concepts/natural-interactions.md) |
+| 单位和坐标转换 | 支持 | 支持 |
+| 场景深度（`xrInnerDepth`、`xrOuterDepth`） | 支持 | 所列版本不可用 |
+| 无边界 `stage` 场景 | 文档所述 SDK 不支持 | 文档所述 SDK 不支持 |
 
-- ⏳ [Android XR](https://www.android.com/xr/)（比如 XREAL 眼镜设备）
-- ⏳ [Meta Horizon OS](https://developers.meta.com/horizon/) （比如 Meta Quest 设备）
+其他要求和限制请参阅对应 API 文档。未列出的 Runtime 或平台需要单独核实，不代表交付承诺。
 
 ## 安装 {#installation}
 
@@ -144,7 +156,7 @@ createRoot(document.getElementById("root")).render(
 );
 ```
 
-这一层包裹就是在合适的时机"打开" WebSpatial 的开关。在空间计算平台上（也就是在 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 中），它会加载 SDK 的空间能力，然后在 [WebSpatial API](#webspatial-api) 启用的状态下展示应用。在普通浏览器中，它会直接展示应用并完全跳过加载，网站保持原来的速度和行为。
+`<SpatialBoot>` 会检测 Runtime 是否可用。在受支持的 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 中，它会在渲染应用前加载空间实现；在普通浏览器中，则不加载该实现而直接渲染应用。这不保证行为完全一致或零开销：请单独测试 2D 布局、输入、回退内容和性能。
 
 :::tip[SSR 项目]
 对于开启 SSR 的项目，`<SpatialBoot>` 必须放在客户端渲染的代码里。参见[如何在启用 SSR 的项目中启用 WebSpatial](../how-to/ssr.md)。
@@ -241,7 +253,7 @@ visionOS 里的 WebSpatial 应用是基于 WebView 实现的，可以用 Mac 上
 
 包含 WebSpatial 的 Web App 有两类分发方式：
 
-第一类分发方式是作为跨平台网站，通过 URL 传播和获取流量，在内置 WebSpatial Runtime 的空间计算平台上[通过 URL 按需访问](https://tpac2025.webspatial.dev/#instant-apps)，可以用完即抛，也可以[作为 PWA 安装到设备上](https://developer.picoxr.com/document/web/installable/)。
+第一种是通过 URL 分发网站。URL 让网站可访问，但不保证空间能力可用。在 PICO OS 6 上，空间功能需要独立运行的 Web App Runtime 及兼容版本；普通浏览器访问使用应用经过测试的 2D 体验。运行模式和限制详见[支持的平台](#supported-platforms)。
 
 :::tip[PICO OS 6 上的 Web App]
 在 [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/) 设备上，Web App 即使不安装，也可以在浏览器之外[独立运行](https://developer.picoxr.com/document/web/install-free/)，并自动启用 WebSpatial 效果。

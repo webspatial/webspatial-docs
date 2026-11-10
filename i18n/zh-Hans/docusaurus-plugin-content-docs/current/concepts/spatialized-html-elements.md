@@ -19,6 +19,8 @@ WebSpatial SDK 以 React 组件形式提供的 [3D 内容容器元素](./3d-cont
 
 WebSpatial API 只为这些空间化 HTML 元素新增了 Z 轴相关的 CSS 能力和 DOM API，让这些 2D 面片可以在 Z 轴方向上[布局定位](../api/react-sdk/css-api/back.md)和[变形转换](../api/react-sdk/css-api/transform.md)，还可以[获取当前的相关状态](../api/react-sdk/dom-api/offsetBack.md)。
 
+## SDK 限制 {#sdk-limitations}
+
 :::caution[当前限制]
 对于受到 [CSS Transform](../api/react-sdk/css-api/transform.md) 影响、作为 2D 面片在空间中发生旋转等变化的空间化 HTML 元素，WebSpatial SDK 暂时还不支持用 [`getBoundingClientRect()`](https://developer.mozilla.org/docs/Web/API/Element/getBoundingClientRect) 获取它们的投影范围，也暂时不支持用 WebSpatial API 中新增的 `getBoundingClientCube()` 获取它们在空间中的 3D 包围盒范围。
 :::

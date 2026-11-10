@@ -12,7 +12,7 @@ export default {
     title: t('homepage.banner.title', 'Bring Your Web to Space.'),
     desc: t(
       'homepage.banner.desc',
-      'Bring native-level spatial UI capabilities and a new development paradigm to widely adopted open Web technologies, enable the mainstream Web ecosystem and Web developers to move seamlessly into the era of spatial computing and multimodal AI.',
+      'Build spatial HTML interfaces and 3D content with React, CSS, and JavaScript using the WebSpatial SDK and a supported runtime.',
     ),
     imgUrl: getFakeImg(1280, 1280),
     button: {
@@ -23,42 +23,24 @@ export default {
   section1: {
     title: t(
       'homepage.section1.title',
-      'One App, Every Device, From Screen to Spatial',
+      'Bring spatial experiences to your web app.',
     ),
     desc: t(
       'homepage.section1.desc',
-      'One codebase delivers 2D UI on desktop and mobile screens, then unlocks Spatialized UI on spatial-computing devices.',
+      'Spatial features run in packaged visionOS apps and PICO OS 6 standalone Web Apps. Available capabilities depend on SDK and runtime versions. Test your 2D experience in desktop and mobile browsers.',
     ),
     children: [
       {
-        title: t('homepage.section1.largeScreen', 'Large Screen'),
+        title: t('homepage.section1.largeScreen', 'Desktop Web'),
         imgUrl: '/video/large.mp4', //getFakeImg(800, 400),
       },
       {
-        title: t('homepage.section1.smallScreen', 'Small Screen'),
+        title: t('homepage.section1.smallScreen', 'Mobile Web'),
         imgUrl: '/video/small.mp4', //getFakeImg(700, 500),
       },
       {
-        title: 'visionOS',
+        title: t('homepage.section1.visionOS', 'visionOS Packaged App'),
         imgUrl: '/video/visionOS.mp4', // getFakeImg(600, 400),
-      },
-      {
-        title: 'PICO OS',
-        imgUrl: getFakeImg(600, 400),
-        desc: t('homepage.section1.comingSoon', 'Coming soon'),
-        disable: true,
-      },
-      {
-        title: 'Android XR',
-        imgUrl: getFakeImg(600, 400),
-        desc: t('homepage.section1.comingSoon', 'Coming soon'),
-        disable: true,
-      },
-      {
-        title: 'Meta Horizon',
-        imgUrl: getFakeImg(600, 400),
-        desc: t('homepage.section1.comingSoon', 'Coming soon'),
-        disable: true,
       },
     ],
   },
@@ -90,21 +72,21 @@ export default {
         ),
         desc: t(
           'homepage.section2.card2.desc',
-          'Move any HTML element off the flat page—whether static or animated—and position or reshape it along the Z-axis, giving your interface true depth beyond width and height.',
+          'Move supported HTML elements off the page plane and use Z-axis layout and transforms to add depth. Review the SDK limitations before integrating.',
         ),
         imgUrl: ['/img/index-s2o/pc/b1.png', '/img/index-s2o/pc/b2.png'], //getFakeImg(600, 400),
         imgUrlh5: ['/img/index-s2o/h5/b1.png', '/img/index-s2o/h5/b2.png'], //getFakeImg(600, 400),
         imgUrlPad: ['/img/index-s2o/pad/b1.png', '/img/index-s2o/pad/b2.png'], //getFakeImg(600, 400),
-        url: '/docs/introduction/getting-started#webspatial-api',
+        url: '/docs/concepts/spatialized-html-elements#sdk-limitations',
       },
       {
         title: t(
           'homepage.section2.card3.title',
-          'Multiple Spatial Scenes, Native Spatial Power',
+          'Multiple Spatial Scenes',
         ),
         desc: t(
           'homepage.section2.card3.desc',
-          'Upgrade the multiple webpages into OS-managed spatial scene containers, so they can run as independent spatial app and automatically gain spatial-computing capabilities.',
+          'Open pages in runtime-managed spatial scenes, with window behavior and scene options determined by the supported platform.',
         ),
         imgUrl: ['/img/index-s2o/pc/c1.png', '/img/index-s2o/pc/c2.png'], // getFakeImg(600, 400),
         imgUrlh5: ['/img/index-s2o/h5/c1.png', '/img/index-s2o/h5/c2.png'], // getFakeImg(600, 400),
@@ -118,7 +100,7 @@ export default {
         ),
         desc: t(
           'homepage.section2.card4.desc',
-          'Introduce volumetric 3D elements that nest and layout seamlessly with 2D elements, then drive them with the 3D engine to host dynamic, interactive 3D content.',
+          'Use Model and Reality SDK components to combine CSS layout with static models or dynamic 3D content in a supported WebSpatial Runtime.',
         ),
         imgUrl: ['/img/index-s2o/pc/d1.png', '/img/index-s2o/pc/d2.png'],
         imgUrlh5: ['/img/index-s2o/h5/d1.png', '/img/index-s2o/h5/d2.png'],
@@ -131,7 +113,7 @@ export default {
     title: t('homepage.section3.title', 'Keep Coding Web, Ship Spatial'),
     desc: t(
       'homepage.section3.desc',
-      'Keep coding with React, CSS, JS and the web-dev tools you already know. WebSpatial extends your existing web stack with a minimal set of new spatial APIs, drops straight into standard Web projects, and unlocks native-grade spatial power with almost no code changes.',
+      'Use React, CSS, and JavaScript to combine spatial HTML, 3D content, and interactions. Integrate the SDK through your JSX runtime and SpatialBoot, then test the capabilities available on each target runtime.',
     ),
     children: [
       {
@@ -160,7 +142,7 @@ export default {
     title: t('homepage.section4.title', 'Explore the WebSpatial Toolkit'),
     desc: t(
       'homepage.section4.desc',
-      'Everything you need to ship spatial apps, built on the tools you already use.',
+      'Explore the spatial APIs, React integration, and visionOS packaging tools.',
     ),
     children: [
       {
@@ -177,7 +159,7 @@ export default {
         title: 'WebSpatial SDK',
         desc: t(
           'homepage.section4.card2.desc',
-          'A drop-in library for React projects that instantly unlocks WebSpatial APIs, and lets you build spatial apps with the same React components and ecosystem you already use.',
+          'React components and JSX integration for spatial HTML and 3D content. Available APIs depend on the SDK, runtime version, and project configuration.',
         ),
         moreUrl: '/docs/introduction/getting-started#webspatial-sdk',
         background:
@@ -187,7 +169,7 @@ export default {
         title: 'WebSpatial Builder',
         desc: t(
           'homepage.section4.card3.desc',
-          'A CLI tool that packages WebSpatial-enabled React projects into installable native spatial apps, wrapping web code in a platform-specific App Shell that runs WebSpatial APIs.',
+          'A CLI tool that packages WebSpatial-enabled web projects into visionOS hybrid apps with a WebSpatial Runtime.',
         ),
         moreUrl: '/docs/introduction/getting-started#step-2-optional-builder',
         background:

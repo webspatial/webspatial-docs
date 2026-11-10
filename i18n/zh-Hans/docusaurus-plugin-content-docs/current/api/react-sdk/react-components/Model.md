@@ -6,10 +6,10 @@ description: '使用接近 Web 标准 `<model>` 的 API，在空间化容器中�
 # `<Model>`
 
 :::info[版本要求]
-本页记录的 API 需要 `@webspatial/react-sdk` `1.7.0` 或更高版本。
+本页记录的 API 需要 `@webspatial/react-sdk` `1.7.0` 或更高版本，还需要对应的 Runtime 支持，详见[版本化支持表](../../../introduction/getting-started.md#supported-platforms)。例如，即使 React SDK 提供了 `poster`、`loading` 和 `currentTime`，旧版 Shell 也不一定全部支持。
 :::
 
-`<Model>` 组件实现了 WebSpatial API 中的[静态 3D 内容容器元素](../../../concepts/3d-content-containers.md)，这种元素兼容 Web 标准中的 `<model>` 元素的 API，同时对 web 标准中的能力做了增强，不仅让元素对应的 2D 面片具备了[空间化 HTML 元素的能力](../../../concepts/spatialized-html-elements.md)，也让 3D 模型能在这个 2D 面片前方的空间中渲染出有真实体积的 3D 内容。
+`<Model>` 是 WebSpatial SDK 提供的 React 组件，用于[静态 3D 内容容器](../../../concepts/3d-content-containers.md)。它遵循[拟议 model-element API](https://immersive-web.github.io/model-element/) 的一个子集，不实现整个草案，也不保证与浏览器实现完全一致。添加 `enable-xr` 且存在受支持的 WebSpatial Runtime 时，对应的 2D 面片会获得[空间化 HTML 元素能力](../../../concepts/spatialized-html-elements.md)，模型可以在面片前方渲染有体积的内容。
 
 :::info[标准 model element 的行为]
 Web 标准中的 model element 原本只能让 3D 模型在这个元素的「画布」上渲染，这个画布看上去像一个洞口，3D 内容在洞口的「内部」或「后方」显示。可参考 [WebKit 的文档](https://webkit.org/blog/17118/a-step-into-the-spatial-web-the-html-model-element-in-apple-vision-pro/) 和 [demo](https://webkit.org/demos/model-demos/index.html)。
@@ -39,13 +39,17 @@ function Example() {
 
 ## 回退行为 {#fallback}
 
+:::caution[需要浏览器支持]
+回退会生成 `<model>` 标记，不会提供 3D 渲染器。渲染需要浏览器原生支持或单独安装的 polyfill。两者都不可用时，请提供图片等 2D 替代内容，并在目标浏览器中测试。
+:::
+
 如果没有添加 `enable-xr` 标记，或当前运行环境中没有 [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime)， `<Model>` 组件会自动降级成 web 标准中的 `<model>` 元素，由浏览器引擎负责渲染（当前平台上的浏览器引擎可能还不支持这个新标准，可以用 `typeof HTMLModelElement !== "undefined"` 做特性检测）。
 
 :::tip[回退渲染的 polyfill]
 为了让回退状态下的标准 `<model>` 代码在暂未原生支持 model element 标准的浏览器中也能显示，可以在页面中添加 [model element polyfill](https://github.com/immersive-web/model-element-samples/tree/main/model-element-polyfill)。
 :::
 
-WebSpatial SDK 当前版本中，`<Model>` 支持以下 model element 的 API：
+下文记录 SDK 支持的 API 子集：属性（`src`、`poster`、`autoplay`、`loop`、`loading`）、子元素 `<source>`、加载和错误事件、资源状态（`currentSrc`、`ready`）、`entityTransform` 以及动画播放 API。各成员是否可用取决于 Runtime 版本。
 
 ## 属性 {#attributes}
 

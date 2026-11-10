@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import {translate} from '@docusaurus/Translate';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
+import Link from '@docusaurus/Link';
 import {useColorMode, type ColorMode} from '@docusaurus/theme-common';
 
 import styles from './index.module.scss';
@@ -256,7 +257,7 @@ export default function Home(): ReactNode {
   const description = translate({
     id: 'homepage.meta.description',
     message:
-      'WebSpatial is a set of spatial APIs and ready-to-use SDK that extend the standard 2D Web ecosystem to support spatial computing across platforms. It enables the entire HTML/CSS-based Web world to step into the spatial era, gaining spatial power on par with native apps (like visionOS apps) while keeping the advantages they already have.',
+      'Build spatial HTML interfaces and 3D content with the WebSpatial React SDK. Explore supported runtimes, integration requirements, and visionOS hybrid app packaging.',
   });
   const {progress, isReady} = useHomepagePreloadProgress();
 
@@ -287,7 +288,19 @@ export default function Home(): ReactNode {
       <div className={styles.pageShell}>
         <Banner />
         <main className={styles.mainWrap}>
-          <Section title={data.section1.title} desc={data.section1.desc}>
+          <Section
+            title={data.section1.title}
+            desc={
+              <>
+                {data.section1.desc}{' '}
+                <Link to="/docs/introduction/getting-started#supported-platforms">
+                  {translate({
+                    id: 'homepage.section1.support',
+                    message: 'View version requirements and platform limitations',
+                  })}
+                </Link>
+              </>
+            }>
             <Slider data={data.section1.children} />
           </Section>
 

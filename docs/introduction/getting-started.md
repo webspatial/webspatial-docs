@@ -7,19 +7,21 @@ description: 'Understand what WebSpatial adds to the Web, how the SDK works, and
 
 ## Overview
 
-WebSpatial is a set of [minimal extensions to HTML/CSS/DOM APIs](https://tpac2025.webspatial.dev/) plus a [polyfill](https://www.w3.org/2001/tag/doc/polyfills/)-style open-source [SDK](#webspatial-sdk). It brings [spatialized UI capabilities](#features) equivalent to [native spatial apps](../concepts/spatial-computing.md#spatial-app) and a [2D containing 3D](#philosophy) developer experience into Web standards and mainstream Web frameworks. This allows HTML content on [spatial computing](../concepts/spatial-computing.md) platforms to break free from the screen, enter real space, gain real volume, support natural spatial interactions and flexible 3D programming, while preserving the Web's original [cross-platform nature](#philosophy), mental model, and [development workflow](#preview). The goal is to let the mainstream Web ecosystem and Web developers move seamlessly into the era of [spatial computing and multimodal AI](https://tpac2025.webspatial.dev/).
+WebSpatial provides proposed extensions to HTML/CSS/DOM APIs and an open-source [React SDK](#webspatial-sdk) for spatial HTML, 3D content, and spatial interactions. The SDK works with a [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) using the current hybrid implementation. Its [2D containing 3D](#philosophy) model combines CSS layout with local 3D content. Available capabilities depend on the SDK version, runtime version, and execution mode; see [Supported Platforms](#supported-platforms). A website can also be distributed by URL, but spatial features require a supported runtime.
 
 ## Features
 
 ### WebSpatial API
 
-1. **Spatial scenes**: The [start page](../concepts/spatial-scenes.md#start-scene) of a Web App (PWA), and every page of the same app [opened in a new window](../concepts/spatial-scenes.md#new-scenes), becomes a [spatial scene container](../concepts/spatial-scenes.md) integrated with the surrounding space. Different [initialization settings](../concepts/spatial-scenes.md#scene-initialization) can be applied to these containers.
+The following capabilities have different runtime requirements. Check the [versioned support tables](#supported-platforms) and each API reference before using them.
+
+1. **Spatial scenes**: In a supported runtime, the [start page](../concepts/spatial-scenes.md#start-scene) of a Web App (PWA), and every page of the same app [opened in a new window](../concepts/spatial-scenes.md#new-scenes), becomes a [spatial scene container](../concepts/spatial-scenes.md) integrated with the surrounding space. Different [initialization settings](../concepts/spatial-scenes.md#scene-initialization) can be applied to these containers.
 2. **Material backplates**: For webpages using the [window scene type](../concepts/spatial-scenes.md#scene-type), the [background panel](../api/react-sdk/css-api/background-material.md) can use a native-feeling translucent material rendered dynamically based on viewpoint and environment, or it can be made fully transparent with no visible border so that elements appear to float separately in space.
 3. **Volumetric windows**: A webpage window can change its [behavior in space](../concepts/spatial-computing.md) from serving 2D GUI needs first to [simulating a real-world object, so the window behaves like a "box"](../concepts/spatial-scenes.md#scene-type) with real volume and [depth](../api/react-sdk/dom-api/innerDepth.md).
-4. **Spatialized HTML elements**: HTML elements can be "lifted" into the 3D space in front of the page plane while still participating in the CSS layout system. These [spatialized](../concepts/spatialized-html-elements.md) HTML elements keep their original state and APIs [on the X and Y axes](../concepts/spatialized-html-elements.md), while also becoming 2D planes floating in a spatial scene. They can have [material backplates](../api/react-sdk/css-api/background-material.md), be [laid out and positioned](../api/react-sdk/css-api/back.md) along the Z axis with CSS, receive 3D [transformations](../api/react-sdk/css-api/transform.md) such as rotation, and expose [related state](../concepts/spatialized-html-elements.md) through DOM APIs.
+4. **Spatialized HTML elements**: Supported HTML elements can be "lifted" into the 3D space in front of the page plane while still participating in the CSS layout system. These [spatialized](../concepts/spatialized-html-elements.md) HTML elements keep their original state and APIs [on the X and Y axes](../concepts/spatialized-html-elements.md), while also becoming 2D planes floating in a spatial scene. They can have [material backplates](../api/react-sdk/css-api/background-material.md), be [laid out and positioned](../api/react-sdk/css-api/back.md) along the Z axis with CSS, receive 3D [transformations](../api/react-sdk/css-api/transform.md) such as rotation, and expose [related state](../concepts/spatialized-html-elements.md) through DOM APIs.
 5. **Material backgrounds**: The background of an HTML element can use a [real-time rendered translucent material](../api/react-sdk/css-api/background-material.md), instead of being limited to fixed colors.
-6. **3D container elements**: Two new kinds of 3D HTML elements act as containers for 3D content with real volume. These 3D container elements still participate in the CSS layout system [as 2D planes](../concepts/spatialized-html-elements.md), support Z-axis [layout](../api/react-sdk/css-api/back.md) and [transforms](../api/react-sdk/css-api/transform.md), and also create a local space in front of the 2D plane based on a [3D development paradigm](../concepts/3d-content-containers.md). Real volumetric 3D content can be rendered there so it fits into the 2D layout system and the [rendering model of 2D GUI frameworks](https://react.dev/learn/thinking-in-react), enabling a [2D containing 3D development paradigm](#philosophy).
-7. **Static 3D container elements**: The 3D content inside a container can be rendered from [prebuilt 3D model asset files](../api/react-sdk/react-components/Model.md). The API for this kind of 3D container element [is fully based on the Web standard model element](../api/react-sdk/react-components/Model.md).
+6. **3D container elements**: Two WebSpatial SDK React components act as containers for 3D content with real volume. These 3D container elements still participate in the CSS layout system [as 2D planes](../concepts/spatialized-html-elements.md), support Z-axis [layout](../api/react-sdk/css-api/back.md) and [transforms](../api/react-sdk/css-api/transform.md), and also create a local space in front of the 2D plane based on a [3D development paradigm](../concepts/3d-content-containers.md). Real volumetric 3D content can be rendered there so it fits into the 2D layout system and the [rendering model of 2D GUI frameworks](https://react.dev/learn/thinking-in-react), enabling a [2D containing 3D development paradigm](#philosophy).
+7. **Static 3D container elements**: The 3D content inside a container can be rendered from [prebuilt 3D model asset files](../api/react-sdk/react-components/Model.md). The API for this kind of 3D container element [follows a subset of the proposed model-element API](../api/react-sdk/react-components/Model.md).
 8. **Dynamic 3D container elements**: The 3D content inside a container can be rendered dynamically through a [flexibly programmable, HTML-style 3D engine API](../concepts/3d-content-containers.md#3d-engine-api).
 9. **HTML-style 3D engine APIs**: These APIs include [3D asset declarations](../concepts/3d-content-containers.md#3d-engine-api) such as models and materials, built-in capability modules, and ready-to-use [3D entities](../api/react-sdk/react-components/Reality.md) such as primitive shapes. These entities can be freely composed in a [3D coordinate system](../concepts/3d-content-containers.md#2d-containing-3d) using a tree structure and [Transform props](../api/react-sdk/react-components/Reality.md), enabling arbitrary 3D scenes and animations.
 10. **2D attachment entities**: [2D HTML content can be attached to plane-shaped 3D entities](../api/react-sdk/react-components/Reality.md), so fully functional 2D content can also be embedded inside 3D content.
@@ -28,11 +30,11 @@ WebSpatial is a set of [minimal extensions to HTML/CSS/DOM APIs](https://tpac202
 
 ### WebSpatial SDK
 
-1. **Forward-looking pre-implementation**: Together with a [native runtime implementation](../concepts/webspatial-app.md#webspatial-runtime), the proposed HTML/DOM/CSS APIs are [polyfilled (or "prollyfilled")](https://www.w3.org/2001/tag/doc/polyfills/) within the JSX, refs, and CSS of React projects. This makes the [WebSpatial API](#webspatial-api) available immediately, without waiting for browser engines on each platform to formally support these APIs.
-2. **Cross-version compatibility**: The SDK shields developers from instability, changes, and platform differences while WebSpatial APIs enter Web standards (HTML/CSS/DOM). The APIs exposed by the SDK remain backward compatible, so older code keeps working.
-3. **Cross-platform compatibility**: On platforms that support [spatial computing and unified rendering](../concepts/spatial-computing.md), platform differences are hidden as much as possible so apps get unified spatial app concepts and spatialized UI features. On platforms that do not support spatial computing and unified rendering, the SDK will automatically ignore WebSpatial APIs, skip loading the full SDK implementation, and avoid affecting the behavior or performance of webpages in ordinary browsers on desktop computers, phones, and other screen-based devices.
-4. **Custom cross-platform logic**: The SDK provides feature detection and [runtime detection](../api/react-sdk/dom-api/userAgent.md), so developers can add custom cross-platform handling for the small number of JS API / DOM API calls that can't be ignored automatically, and enable custom enhancements and platform-specific features on spatial computing platforms.
-5. **App packaging**: A PWA can be packaged as a [native app bundle with its own WebSpatial Runtime and no external dependency](../concepts/webspatial-app.md#packaged-webspatial-app), such as a visionOS app. Like a native app, it can be installed on simulators or real devices for [preview and debugging](#preview), and [submitted to app stores such as the visionOS App Store](#distribution).
+1. **Proposed APIs in React**: Together with a [native runtime implementation](../concepts/webspatial-app.md#webspatial-runtime), the SDK implements spatial APIs through React JSX, refs, and CSS. These SDK APIs do not imply native browser support.
+2. **Version requirements**: Experimental APIs can change. Check the required SDK and runtime versions, [release notes](https://github.com/webspatial/webspatial-sdk/releases), and API limitations before upgrading.
+3. **Platform-dependent behavior**: Available features and behavior depend on the platform, runtime version, and execution mode. Without a supported runtime, `<SpatialBoot>` renders the app without loading the spatial implementation. Test layout, interactions, fallback content, and performance in the ordinary browsers you support.
+4. **Feature detection**: Use capability checks and [runtime detection](../api/react-sdk/dom-api/userAgent.md) to guard spatial API calls and provide alternatives for unavailable features.
+5. **App packaging**: A PWA can be packaged as a [native app bundle with its own WebSpatial Runtime](../concepts/webspatial-app.md#packaged-webspatial-app), such as a visionOS app. The bundle still depends on the platform's system frameworks and Web runtime. It can be [previewed and debugged](#preview) on supported simulators or devices and [submitted to the visionOS App Store](#distribution).
 
 ## Philosophy
 
@@ -41,14 +43,14 @@ WebSpatial is a set of [minimal extensions to HTML/CSS/DOM APIs](https://tpac202
 3. Inside local 3D spaces, WebSpatial avoids doing [independent rendering](https://tpac2025.webspatial.dev/#webxr-not-enough) with low-level 3D graphics APIs as WebXR does. Instead, it uses a [declarative 3D engine API that combines ECS and HTML](../concepts/3d-content-containers.md#3d-engine-api), so spatial computing platforms can understand this 3D content and [render it together](../concepts/spatial-computing.md#unified-rendering) with content from other apps in the same space.
 4. WebSpatial avoids implementing all content for a [spatial app](../concepts/spatial-computing.md#spatial-app) inside a single webpage the way a [WebXR session](https://developer.picoxr.com/document/web/introduce-webxr-standards/) does. Instead, it preserves standard Web development patterns such as multi-page sites, hyperlinks, and PWAs, and uses the [Web App Manifest](../concepts/webspatial-app.md#web-app) and ["open links in a new window"](../concepts/spatial-scenes.md#new-scenes) to provide spatial app and [spatial container](../concepts/spatial-scenes.md) capabilities.
 5. The [SDK](#webspatial-sdk) should keep its [simulated pre-implementation](https://www.w3.org/2001/tag/doc/polyfills/) of the proposed HTML/CSS/DOM APIs moderate, not overly complex or uncontrollable. For that reason, modifying [spatial styles/state](../concepts/spatialized-html-elements.md) and [listening to spatial events](../concepts/natural-interactions.md#spatial-interactions) is only supported in declarative code that follows the [Rules of React](https://react.dev/reference/rules), and [reading spatial styles/state (read-only)](../concepts/spatialized-html-elements.md) is only supported on objects obtained through [Hook APIs](https://react.dev/reference/react/hooks), such as [Refs](https://react.dev/learn/referencing-values-with-refs). Directly selecting DOM objects with imperative code is not supported for these operations.
-6. The [SDK](#webspatial-sdk) should integrate into existing standard Web projects with as little cost as possible, in a way that is [close to one-click installation](#installation), without changing the project's [original development, build, or deployment workflow](#preview), and while ensuring that the site's existing behavior, performance, and debugging experience on desktop/mobile platforms and ordinary browsers are not affected.
-7. With WebSpatial APIs and the SDK, building a new [spatial app](../concepts/spatial-computing.md#spatial-app) should feel just like building a normal website. If developers want, the app can still be distributed as a standard website, preserving the Web's original cross-platform capability and its [URL-based usage model](https://tpac2025.webspatial.dev/#instant-apps).
+6. The [SDK](#webspatial-sdk) integrates spatial APIs into React projects through [JSX configuration and initialization](#set-up-your-project). Integration requirements vary by build tool and framework. Validate the build, debugging workflow, ordinary 2D behavior, and performance in your project.
+7. A WebSpatial app can still be distributed as a website through its [URL](#distribution). Ordinary website access and spatial capability support are separate: each target environment needs a tested 2D experience, and spatial enhancements require a supported runtime.
 
 ## Supported Web Projects
 
-The open-source [WebSpatial SDK](#webspatial-sdk) currently provides a [React SDK](../api/react-sdk/). Any standard website project built with React should be able to enable the [WebSpatial API](#webspatial-api) by integrating this SDK.
+The open-source [WebSpatial SDK](#webspatial-sdk) provides a [React SDK](../api/react-sdk/). The configurations listed below have been used with the SDK; other React frameworks, plugins, and dependency combinations need validation. Integrating the SDK does not enable every API on every runtime.
 
-The React SDK needs to be integrated into the [JSX Runtime](https://www.typescriptlang.org/docs/handbook/jsx.html). In React projects that use TypeScript, this requires only [one line of configuration](#set-up-your-project) (a few web build tools need [extra configuration](../how-to/rspack.md)). In JavaScript projects, you [can only configure the JSX Runtime in the web build tool](../how-to/non-ts.md).
+The React SDK needs to be integrated into the [JSX Runtime](https://www.typescriptlang.org/docs/handbook/jsx.html). In React projects that use TypeScript, configure [`jsxImportSource`](#set-up-your-project) (a few web build tools need [extra configuration](../how-to/rspack.md)). In JavaScript projects, you [can only configure the JSX Runtime in the web build tool](../how-to/non-ts.md).
 The web build tools that have been tested and used most often so far are:
 
 - Vite
@@ -61,20 +63,30 @@ The latest version of WebSpatial SDK currently has a bug that temporarily preven
 
 ## Supported Platforms
 
-The [spatial computing](../concepts/spatial-computing.md) platforms currently supported are:
+Support below is scoped to the runtime versions recorded in the [SDK 2.0.0 capability matrix](https://github.com/webspatial/webspatial-sdk/blob/%40webspatial/react-sdk%402.0.0/packages/core/src/runtime/capability-data.ts), rather than every device or OS release. Runtime identifiers are separate from OS and npm package versions. Check [release notes](https://github.com/webspatial/webspatial-sdk/releases) and the capabilities of the actual runtime before using a feature.
 
-- ✅ [visionOS](https://developer.apple.com/visionos/) (for example, Vision Pro devices): with WebSpatial SDK, a website can be packaged as a [hybrid app](../concepts/webspatial-app.md#packaged-webspatial-app) that includes the full [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime), submitted to the App Store, and run with native spatial behavior
-- ✅ [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/) (for example, [Project Swan](https://developer.picoxr.com/blog/pico-developer-special-event-2026/) devices): its OS-level [Web App Runtime](https://developer.picoxr.com/zh/document/web/web-app/) includes the [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime), so WebSpatial APIs on websites can work directly
+| Platform | SDK reference / runtime versions | Execution mode | Known limitations |
+| --- | --- | --- | --- |
+| [visionOS](https://developer.apple.com/visionos/) | SDK 2.0.0; `WSAppShell/1.5.0`, `1.6.0`, `1.7.0`, `1.8.0` | [Packaged hybrid app](../concepts/webspatial-app.md#packaged-webspatial-app) using Builder and `@webspatial/platform-visionos` | Safari alone does not enable WebSpatial. Model features vary by shell version; WKWebView does not support WebXR in the documented implementation. |
+| [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/) | SDK 2.0.0; `PicoWebApp/0.1.1`, `0.1.2`, `0.2.2`, `0.3.1`, `0.4.90` | Standalone [Web App Runtime](https://developer.picoxr.com/document/web/web-app/) outside the browser; no Builder packaging | The listed runtimes do not expose `xrInnerDepth` or `xrOuterDepth`. Model features vary by runtime version. |
+| Ordinary browsers without WebSpatial Runtime | Browser-specific; no spatial runtime | Website or PWA | 2D experience only; test fallback behavior. `<Model>` needs native model-element support or a separate polyfill. |
 
-Spatial computing platforms currently working toward WebSpatial Runtime implementations are:
+### Capability Status
 
-- ⏳ [JSAR Runtime](https://jsar-project.github.io/runtime/) (for example, Rokid glasses)
-- ⏳ [IRIS OS](https://www.irisview.cn/)
+This table summarizes the same versioned matrix. **Supported** means the runtime advertises the capability in these rows; **Limited** means only a subset is available. Experimental APIs may change even when a runtime supports them. These statuses do not certify every framework or browser combination.
 
-Spatial computing platforms planned for priority support, but currently waiting for stable native APIs, are:
+| Capability | visionOS runtimes above | PICO runtimes above |
+| --- | --- | --- |
+| Window and volume scenes | Supported; scene options depend on runtime | Supported; scene options depend on runtime |
+| Spatial HTML, Z-axis layout, transforms, material backplates | Supported with [SDK limitations](../concepts/spatialized-html-elements.md) | Supported with [SDK limitations](../concepts/spatialized-html-elements.md) |
+| Static 3D (`Model`) | Limited: `1.5.0` has basic resource/transform APIs; playback expands in `1.6.0`; `poster`, `loading`, and `currentTime` in `1.7.0` | Limited: basic APIs in `0.1.1`; playback, `poster`, and `currentTime` in `0.1.2`; `loading` in `0.3.1` |
+| Dynamic 3D, entities, attachments | Supported; attachment placement extension unavailable in these rows | Supported; attachment placement extension requires `0.4.90` |
+| Tap, drag, rotate, magnify | Supported; input mapping is [platform-specific](../concepts/natural-interactions.md) | Supported; input mapping is [platform-specific](../concepts/natural-interactions.md) |
+| Unit and coordinate conversion | Supported | Supported |
+| Scene depth (`xrInnerDepth`, `xrOuterDepth`) | Supported | Unavailable in the listed versions |
+| Unbounded `stage` scenes | Unavailable in the documented SDK | Unavailable in the documented SDK |
 
-- ⏳ [Android XR](https://www.android.com/xr/) (for example, XREAL glasses)
-- ⏳ [Meta Horizon OS](https://developers.meta.com/horizon/) (for example, Meta Quest devices)
+See each API reference for additional requirements and limitations. An unlisted runtime or platform should be checked independently; it is not a delivery commitment.
 
 ## Installation
 
@@ -144,7 +156,7 @@ createRoot(document.getElementById("root")).render(
 );
 ```
 
-This one wrapper is what switches WebSpatial on at the right moment. On spatial computing platforms (in a [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime)), it loads the spatial capabilities of the SDK and then shows the app with the [WebSpatial API](#webspatial-api) enabled. In ordinary browsers, it just shows the app and skips the loading entirely, so the website stays exactly as fast as before.
+`<SpatialBoot>` detects runtime availability. In a supported [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime), it loads the spatial implementation before rendering the app. In ordinary browsers, it renders the app without loading that implementation. This does not guarantee identical behavior or zero overhead: test your 2D layout, input, fallback content, and performance separately.
 
 :::tip[SSR projects]
 For projects with SSR enabled, `<SpatialBoot>` must live in client-rendered code. See [How to enable WebSpatial in SSR-enabled projects](../how-to/ssr.md).
@@ -241,7 +253,7 @@ See Google's official documentation: [Remote debug Android devices](https://deve
 
 There are two ways to distribute a Web App that includes WebSpatial:
 
-The first is to distribute it as a cross-platform website, spread it through URLs, and get traffic that way. On spatial computing platforms with a built-in WebSpatial Runtime, it can be [accessed on demand by URL](https://tpac2025.webspatial.dev/#instant-apps), used temporarily, or [installed onto a device as a PWA](https://developer.picoxr.com/document/web/installable/).
+The first is to distribute the website through URLs. The URL makes the website accessible; it does not guarantee spatial support. On PICO OS 6, spatial features require the standalone Web App Runtime and a compatible runtime version. Ordinary browser access uses the app's tested 2D experience. See [Supported Platforms](#supported-platforms) for execution modes and limits.
 
 :::tip[Web Apps on PICO OS 6]
 On [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/) devices, a Web App can also [run independently](https://developer.picoxr.com/document/web/install-free/) outside the browser without being installed, and WebSpatial effects are enabled automatically.

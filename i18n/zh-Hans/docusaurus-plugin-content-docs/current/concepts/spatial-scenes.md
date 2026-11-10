@@ -5,7 +5,11 @@ description: '理解空间场景容器的类型、初始化方式，以及 WebSp
 
 # 空间场景 {#spatial-scenes}
 
-Spatial Scene 又叫 Spatial Container，是空间计算操作系统为[空间应用](./spatial-computing.md#spatial-app)提供的最基础的应用内容容器，用于实现[统一渲染](./spatial-computing.md#unified-rendering)和提供[软件和空间结合的基本能力](./spatial-computing.md)。空间应用的所有内容都需要通过这种容器来提供，就好像桌面操作系统里的应用内容都需要通过窗口来提供。
+:::info[实现范围]
+本页描述受支持 hybrid Runtime 中的 WebSpatial 场景行为，窗口界面、缩放、调整尺寸和初始化限制以 visionOS 打包应用为参考。这些是实现细节，不是所有空间计算操作系统的通用规则。PICO OS Web App Runtime 可能不同，请检查[版本化支持表](../introduction/getting-started.md#supported-platforms)及各场景选项文档。
+:::
+
+在 WebSpatial 中，Spatial Scene（也称 Spatial Container）是由 Runtime 管理的空间内容容器，把网页与平台的[统一渲染](./spatial-computing.md#unified-rendering)和窗口管理连接起来。
 
 对于 [WebSpatial App](./webspatial-app.md) 来说，每个 Spatial Scene 都相当于一个在独立「窗口」中通过 URL 加载和运行的网页。
 WebSpatial App 完全由这些「窗口」组成，所有内容都来自这些「窗口」中运行的 HTML/CSS/JS 代码。
@@ -14,7 +18,7 @@ WebSpatial App 完全由这些「窗口」组成，所有内容都来自这些�
 
 ## 场景类型 {#scene-type}
 
-Spatial Scene 目前有三种类型：
+文档所述 SDK 支持 `window` 和 `volume` 场景。下文介绍的拟议 `stage` 类型尚不受支持。
 
 默认是 `window` 类型，主体内容是一个悬浮在空间中的 2D 面片，这个 2D 面片可以被用户拖拽改变宽高尺寸（会受到[初始化属性的约束](../api/react-sdk/scene-options/resizability.md)），也可以被用户拖拽改变空间位置，但会受到 [Spatial Runtime](./spatial-computing.md#spatial-runtime) 中空间计算逻辑的约束，还会在移动过程中始终[相对于用户视野区域保持大小不变](../api/react-sdk/scene-options/worldScaling.md)，因为这种类型的 Spatial Scene 优先服务于 GUI 需求，需要让内容和文字始终清晰易读。
 

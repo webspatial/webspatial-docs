@@ -6,10 +6,10 @@ description: 'Render 3D model files inside a spatialized container using the Web
 # `<Model>`
 
 :::info[Version requirement]
-The APIs documented on this page require `@webspatial/react-sdk` version `1.7.0` or later.
+The APIs documented on this page require `@webspatial/react-sdk` version `1.7.0` or later. Runtime support is an additional requirement: see the [versioned support table](../../../introduction/getting-started.md#supported-platforms). For example, `poster`, `loading`, and `currentTime` are not all available in older shells even when the React SDK exposes them.
 :::
 
-The `<Model>` component implements the [static 3D content container element](../../../concepts/3d-content-containers.md) in the WebSpatial API. This element is compatible with the API of the `<model>` element in Web standards, while also enhancing the standard capability so that the 2D plane corresponding to the element gains the capabilities of a [spatialized HTML element](../../../concepts/spatialized-html-elements.md), and the 3D model can render truly volumetric 3D content in the space in front of that 2D plane.
+The `<Model>` component is a WebSpatial SDK React component for [static 3D content containers](../../../concepts/3d-content-containers.md). It follows a subset of the [proposed model-element API](https://immersive-web.github.io/model-element/); it does not implement the entire draft or guarantee parity with browser implementations. With `enable-xr` and a supported WebSpatial Runtime, its 2D plane gains [spatialized HTML element capabilities](../../../concepts/spatialized-html-elements.md) and the model can render volumetric content in front of that plane.
 
 :::info[Behavior of the standard model element]
 In Web standards, the model element can only render a 3D model inside the element's own "canvas". That canvas looks like an opening, and the 3D content appears "inside" or "behind" that opening. See the [WebKit documentation](https://webkit.org/blog/17118/a-step-into-the-spatial-web-the-html-model-element-in-apple-vision-pro/) and [demo](https://webkit.org/demos/model-demos/index.html).
@@ -39,13 +39,17 @@ function Example() {
 
 ## Fallback
 
+:::caution[Browser support required]
+Fallback emits `<model>` markup; it does not supply a 3D renderer. Rendering requires native browser support or a separately installed polyfill. Provide an image or other 2D alternative when neither is available, and test the fallback in your target browsers.
+:::
+
 If the `enable-xr` marker is not added, or if the current runtime environment does not have [WebSpatial Runtime](../../../concepts/webspatial-app.md#webspatial-runtime), the `<Model>` component automatically falls back to the `<model>` element from Web standards and is rendered by the browser engine. The browser engine on the current platform may not support this new standard yet. You can use `typeof HTMLModelElement !== "undefined"` for feature detection.
 
 :::tip[Polyfill for fallback rendering]
 To make fallback `<model>` markup render in browsers that do not yet ship native model element support, add the [model element polyfill](https://github.com/immersive-web/model-element-samples/tree/main/model-element-polyfill) to the page.
 :::
 
-In the current version of WebSpatial SDK, `<Model>` supports the following model element APIs:
+The supported SDK API subset is documented below: attributes (`src`, `poster`, `autoplay`, `loop`, `loading`), child `<source>` elements, load/error events, resource state (`currentSrc`, `ready`), `entityTransform`, and the animation playback APIs. Availability of individual members depends on the runtime version.
 
 ## Attributes
 

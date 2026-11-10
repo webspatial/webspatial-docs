@@ -5,6 +5,10 @@ description: 'Understand gaze, pinch, touch, and the spatial events WebSpatial e
 
 # Natural Interactions
 
+:::info[Platform scope]
+The gaze/pinch, 2D event mapping, and Hover Effect examples below describe the documented visionOS hybrid implementation. Input devices, event order, touch/mouse synthesis, and hover behavior can vary with OS and Web runtime versions. Validate them on your target devices; they are not a contract for PICO OS or ordinary browsers. SDK spatial gestures are listed separately below.
+:::
+
 Natural interactions mean that when users interact with software interfaces and virtual content in space, the interaction feels like manipulating real objects in the physical world. No control device such as an XR controller is used. Interaction relies only on hands and eyes in an intuitive and efficient way.
 
 There are two modes of natural interaction:
@@ -14,9 +18,9 @@ There are two modes of natural interaction:
 
 ## 2D Content Interactions
 
-For 2D content, these two natural interaction modes are equivalent in effect. They are both equivalent to touch interaction on traditional screen devices. Performing direct interaction on an HTML element, where a finger directly touches it, or indirect interaction, where the user first looks at it and then pinches fingers together, both trigger Touch Events and Pointer Events. To remain compatible with older webpage code, Mouse Events and `click` are also triggered. The behavior of these Web APIs is completely equivalent to touch interaction on webpages on traditional screen devices.
+In the documented visionOS implementation, direct touch and gaze/pinch interaction can map to existing webpage input APIs, including Pointer Events, Touch Events, compatibility Mouse Events, and `click`. The exact sequence and synthesized events depend on the Web runtime. Test handlers on the target version instead of assuming full equivalence with touchscreen browsers.
 
-Taking indirect interaction as an example:
+The following indirect-interaction sequence is an illustration of that implementation, not a guaranteed ordering across runtimes:
 
 1. Before the fingers pinch together, moving the gaze position does not trigger any JS events or CSS hover state. This is equivalent to the state in touch interaction before a finger touches the screen, where webpage code has no knowledge of what the user is doing.
 2. When the fingers pinch and then immediately release, the following JS events are triggered in order:
@@ -32,7 +36,7 @@ Taking indirect interaction as an example:
 
 ## Hover Effect
 
-In indirect interaction mode, before the fingers pinch, the webpage does not know where the user is looking, so it cannot trigger any JS events or change any CSS state. That means a hover effect cannot be implemented in webpage code. Instead, the [Spatial Runtime](./spatial-computing.md#spatial-runtime) must take unified responsibility for automatically rendering hover effects on the HTML element being looked at.
+In the visionOS indirect interaction described here, before the fingers pinch, the webpage does not know where the user is looking, so it cannot trigger any JS events or change any CSS state. That means a hover effect cannot be implemented in webpage code. Instead, the [Spatial Runtime](./spatial-computing.md#spatial-runtime) must take unified responsibility for automatically rendering hover effects on the HTML element being looked at.
 
 To do this, the [Spatial Runtime](./spatial-computing.md#spatial-runtime) needs to know which "Interactive Regions" are currently visible in the webpage.
 
@@ -49,7 +53,7 @@ Unlike flat 2D content, all [spatialized HTML elements](./spatialized-html-eleme
 
 Existing JS interaction events in Web standards can only hit the point where these spatial objects or 3D content project onto a 2D plane, and can only provide X/Y positions. They cannot support interaction within a 3D spatial range.
 
-For that reason, the [Spatial Runtime](./spatial-computing.md#spatial-runtime) defines and implements new spatial gestures in a unified way. The [WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk) currently supports four spatial gestures: tap, drag, rotate, and magnify:
+WebSpatial SDK exposes tap, drag, rotate, and magnify events when the runtime provides those capabilities. These SDK gestures are distinct from the platform's mapping of gaze, hands, controllers, or other input into webpage events. Check [versioned runtime support](../introduction/getting-started.md#supported-platforms) and test the intended input method on each platform:
 
 | Type                                                             | Event Name                                              | React API                                                     | Event Results                                                          |
 | ---------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |

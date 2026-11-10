@@ -5,6 +5,10 @@ description: '了解注视、捏合、触摸等自然交互方式，以及 WebSp
 
 # 自然交互 {#natural-interactions}
 
+:::info[平台范围]
+下文的注视、捏合、2D 事件映射和 Hover Effect 示例描述文档所述的 visionOS hybrid 实现。输入设备、事件顺序、触摸与鼠标事件模拟、hover 行为可能随 OS 和 Web Runtime 版本变化。请在目标设备上验证，不应把这些示例视为 PICO OS 或普通浏览器的行为约定。SDK 空间手势在下文单独列出。
+:::
+
 自然交互是指让用户跟空间中的软件界面和虚拟内容交互时，就像跟现实世界的真实物体互动，不使用任何控制设备（比如 XR 手柄），只靠手和眼就做直观高效的交互。
 
 这种自然交互有两种模式：
@@ -14,9 +18,9 @@ description: '了解注视、捏合、触摸等自然交互方式，以及 WebSp
 
 ## 2D 内容交互 {#2d-content-interactions}
 
-这两种自然交互模式在 2D 内容上产生的效果是等价的，都相当于在传统屏幕设备上做触屏交互的结果：在一个 HTML 元素上做直接交互（手指直接触控元素）或间接交互（先注视元素，再捏合手指），都会触发 Touch Events、Pointer Events，为了兼容旧网页代码，也会触发 Mouse Events 和 click 事件，这些 Web API 的行为完全等价于在传统屏幕设备上对网页做触屏交互。
+在文档所述的 visionOS 实现中，直接触控与注视加捏合可以映射到现有网页输入 API，包括 Pointer Events、Touch Events、兼容性 Mouse Events 和 `click`。具体顺序和模拟事件取决于 Web Runtime。请在目标版本上测试事件处理，不要假定它们完全等价于触屏浏览器。
 
-以间接交互为例：
+以下间接交互顺序是该实现的示例，不保证各 Runtime 都采用相同顺序：
 
 1. 在手指捏合之前，眼睛注视位置的移动，不触发任何 JS 事件，也不触发 CSS 的 hover 状态，相当于在触屏交互中，手指还没接触到屏幕前的状态，网页代码完全不知道用户在做什么
 2. 在手指捏合然后立刻松开的过程中，会按顺序触发以下 JS 事件：
@@ -32,7 +36,7 @@ description: '了解注视、捏合、触摸等自然交互方式，以及 WebSp
 
 ## Hover Effect {#hover-effect}
 
-在间接交互模式下，在手指捏合之前，由于网页不知道眼睛在注视哪里，不会触发任何 JS 事件，也不会改变 CSS 状态，因此无法用网页代码实现 Hover Effect，需要由 [Spatial Runtime](./spatial-computing.md#spatial-runtime) 统一负责在被注视的 HTML 元素上自动渲染 Hover Effect。
+在这里描述的 visionOS 间接交互中，在手指捏合之前，由于网页不知道眼睛在注视哪里，不会触发任何 JS 事件，也不会改变 CSS 状态，因此无法用网页代码实现 Hover Effect，需要由 [Spatial Runtime](./spatial-computing.md#spatial-runtime) 统一负责在被注视的 HTML 元素上自动渲染 Hover Effect。
 
 为此，[Spatial Runtime](./spatial-computing.md#spatial-runtime) 需要知道网页当前可见区域中有哪些「Interactive Region」。
 
@@ -49,7 +53,7 @@ description: '了解注视、捏合、触摸等自然交互方式，以及 WebSp
 
 Web 标准中现有的 JS 交互事件只能命中这些空间对象或 3D 内容投影到 2D 平面上的点，只能获取 X/Y 轴位置，无法实现 3D 空间范围中的交互。
 
-因此，[Spatial Runtime](./spatial-computing.md#spatial-runtime) 统一定义和实现了新的空间手势，[WebSpatial SDK](../introduction/getting-started.md#webspatial-sdk) 目前支持单击、拖拽、旋转、缩放这四种空间手势：
+当 Runtime 提供对应能力时，WebSpatial SDK 会暴露单击、拖拽、旋转、缩放事件。这些 SDK 手势与平台把注视、手部、控制器等输入映射到网页事件的方式不同。请检查[版本化 Runtime 支持](../introduction/getting-started.md#supported-platforms)，并在每个平台测试目标输入方式：
 
 | Type                                                             | Event Name                                              | React API                                                     | Event Results                                                          |
 | ---------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
