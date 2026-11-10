@@ -48,18 +48,6 @@ export default {
         desc: t('homepage.section1.comingSoon', 'Coming soon'),
         disable: true,
       },
-      {
-        title: 'Android XR',
-        imgUrl: getFakeImg(600, 400),
-        desc: t('homepage.section1.comingSoon', 'Coming soon'),
-        disable: true,
-      },
-      {
-        title: 'Meta Horizon',
-        imgUrl: getFakeImg(600, 400),
-        desc: t('homepage.section1.comingSoon', 'Coming soon'),
-        disable: true,
-      },
     ],
   },
   section2: {
