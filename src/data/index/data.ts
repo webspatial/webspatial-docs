@@ -12,7 +12,7 @@ export default {
     title: t('homepage.banner.title', 'Bring Your Web to Space.'),
     desc: t(
       'homepage.banner.desc',
-      'Bring native-level spatial UI capabilities and a new development paradigm to widely adopted open Web technologies, helping the mainstream Web ecosystem and Web developers move into the era of spatial computing and multimodal AI.',
+      'Bring spatial UI capabilities and a new development paradigm to widely adopted open Web technologies, helping the mainstream Web ecosystem and Web developers move into the era of spatial computing and multimodal AI.',
     ),
     imgUrl: getFakeImg(1280, 1280),
     button: {
@@ -78,7 +78,7 @@ export default {
         ),
         desc: t(
           'homepage.section2.card2.desc',
-          'Move any HTML element off the flat page—whether static or animated—and position or reshape it along the Z-axis, giving your interface true depth beyond width and height.',
+          'Move supported HTML elements off the flat page and position or reshape them along the Z-axis (animated via JS, not CSS animations), giving your interface true depth beyond width and height.',
         ),
         imgUrl: ['/img/index-s2o/pc/b1.png', '/img/index-s2o/pc/b2.png'], //getFakeImg(600, 400),
         imgUrlh5: ['/img/index-s2o/h5/b1.png', '/img/index-s2o/h5/b2.png'], //getFakeImg(600, 400),
@@ -119,7 +119,7 @@ export default {
     title: t('homepage.section3.title', 'Keep Coding Web, Ship Spatial'),
     desc: t(
       'homepage.section3.desc',
-      'Keep coding with React, CSS, JS and the web-dev tools you already know. WebSpatial extends your existing web stack with a minimal set of new spatial APIs, integrates into standard Web projects, and unlocks native spatial capabilities with a small set of explicit code changes.',
+      'Build spatial experiences using familiar React, CSS, and JavaScript tools on supported platforms.',
     ),
     children: [
       {
