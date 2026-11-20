@@ -7,7 +7,7 @@ description: '了解 WebSpatial 给 Web 带来的能力、SDK 的工作方式，
 
 ## 概述 {#overview}
 
-WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.webspatial.dev/)，以及 [Polyfill](https://www.w3.org/2001/tag/doc/polyfills/) 风格的开源 [SDK](#webspatial-sdk)，致力于在 Web 标准和现有主流 Web 框架中引入跟[原生空间应用](../concepts/spatial-computing.md#spatial-app)等价的[空间化 UI 能力](#features)和[「2D 包含 3D」范式](#philosophy)的开发者体验，让 HTML 内容在[空间计算](../concepts/spatial-computing.md)平台上能摆脱屏幕的限制、进入现实空间、获得真实体积、支持空间中的自然交互和灵活的 3D 编程，同时不影响 Web 原有的[跨平台能力](#philosophy)、思维方式和[开发方式](#preview)，让主流 Web 生态和 Web 开发者能无缝进入[空间计算和多模态 AI 的时代](https://tpac2025.webspatial.dev/)。
+WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.webspatial.dev/)，以及 [Polyfill](https://www.w3.org/2001/tag/doc/polyfills/) 风格的开源 [SDK](#webspatial-sdk)，致力于在 Web 标准和现有主流 Web 框架中在受支持的平台上引入[空间 UI 能力](#features)和[「2D 包含 3D」范式](#philosophy)的开发者体验，让 HTML 内容在[空间计算](../concepts/spatial-computing.md)平台上能摆脱屏幕的限制、进入现实空间、获得真实体积、支持空间中的自然交互和灵活的 3D 编程，同时不影响 Web 原有的[跨平台能力](#philosophy)、思维方式和[开发方式](#preview)，让主流 Web 生态和 Web 开发者能进入[空间计算和多模态 AI 的时代](https://tpac2025.webspatial.dev/)。
 
 ## 功能特性 {#features}
 
@@ -29,8 +29,8 @@ WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.w
 ### WebSpatial SDK {#webspatial-sdk}
 
 1. **前瞻性预实现**：结合[原生 Runtime 实现](../concepts/webspatial-app.md#webspatial-runtime)，在 React 项目的 JSX、Ref、CSS 里[提前模拟实现拟议标准](https://www.w3.org/2001/tag/doc/polyfills/)中的 HTML/DOM/CSS API，让 [WebSpatial API](#webspatial-api) 现在就立即可用 ，不用等待各个平台上的浏览器引擎正式支持这些 API。
-2. **跨版本兼容**：屏蔽了 WebSpatial API 进入 Web 标准（HTML/CSS/DOM）过程中的不稳定、变动和平台差异，SDK 提供的 API 始终保持向后兼容，让旧代码一直可运行
-3. **跨平台兼容**：在支持[空间计算和统一渲染](../concepts/spatial-computing.md)的平台上，会尽量屏蔽差异，提供跨平台统一的空间应用概念和空间化 UI 特性。在不支持空间计算和统一渲染的平台上，会自动忽略 WebSpatial API、不加载完整的 SDK 实现，不影响网页在桌面电脑、手机等屏幕设备和普通浏览器里的效果和性能。
+2. **跨版本兼容**：尽量降低 WebSpatial API 走向 Web 标准（HTML/CSS/DOM）过程中的不稳定、变动和平台差异带来的影响。不同 SDK / Runtime 版本之间的 API 仍可能变化，升级时请查看版本说明并测试你的应用。
+3. **跨平台兼容**：在支持[空间计算和统一渲染](../concepts/spatial-computing.md)的平台上，会尽量减少平台差异，提供统一的空间应用概念和空间化 UI 特性。在没有受支持的 WebSpatial Runtime 的平台上，SDK 的设计目标是忽略 WebSpatial API、不加载完整的 SDK 实现，以尽量减少对桌面电脑、手机等屏幕设备和普通浏览器中网页的影响。应用仍需要针对平台做适配、为不支持的环境做降级处理，并在各个目标平台上测试。
 4. **自定义跨平台逻辑**：提供特性检测和 [Runtime 检测](../api/react-sdk/dom-api/userAgent.md)方法，可以对少数无法自动忽略的 JS API / DOM API 调用做自定义的跨平台处理，也可以在空间计算平台上启用自定义的增强效果和专属功能。
 5. **应用打包**：支持把 PWA 打包成[自带 WebSpatial Runtime、无外部依赖](../concepts/webspatial-app.md#packaged-webspatial-app)的原生应用安装包（比如 visionOS 应用），跟原生应用一样能在模拟器或真机设备上安装和[运行调试](#preview)，能[上架到 visionOS App Store 这样的应用商店](#distribution)。
 
@@ -41,7 +41,7 @@ WebSpatial 是一套[对 HTML/CSS/DOM API 的最小化扩展](https://tpac2025.w
 3. 在 3D 局部空间中，避免像 WebXR 那样用底层 3D 图形 API 做[独立渲染](https://tpac2025.webspatial.dev/#webxr-not-enough)，而是通过[结合 ECS 和 HTML 的声明式 3D 引擎 API](../concepts/3d-content-containers.md#3d-engine-api)，让空间计算平台能理解这些 3D 内容，能把它们跟其他应用的内容一起在同一个空间做[统一渲染](../concepts/spatial-computing.md#unified-rendering)。
 4. 避免像 [WebXR session](https://developer.picoxr.com/document/web/introduce-webxr-standards/) 那样在单一网页的代码里实现一个[空间应用](../concepts/spatial-computing.md#spatial-app)的所有内容，而是保持多页网站、网页链接、PWA 等标准 Web 开发方式，通过 [Web App Manifest](../concepts/webspatial-app.md#web-app) 和[「在新窗口打开链接」](../concepts/spatial-scenes.md#new-scenes)来提供空间应用整体和[空间容器](../concepts/spatial-scenes.md)的能力。
 5. [SDK](#webspatial-sdk) 对拟议标准中 HTML/CSS/DOM API 的[模拟预实现](https://www.w3.org/2001/tag/doc/polyfills/)要适度，不能过于复杂和不可控，因此只在遵循 [Rules of React](https://react.dev/reference/rules) 的声明式代码中支持修改[空间化样式/状态](../concepts/spatialized-html-elements.md)和[监听空间事件](../concepts/natural-interactions.md#spatial-interactions)，只在通过 [Hook API](https://react.dev/reference/react/hooks) 获取的对象（比如 [Ref](https://react.dev/learn/referencing-values-with-refs)）上支持[读取空间化样式/状态（只读）](../concepts/spatialized-html-elements.md)，不支持[直接选择 DOM 对象](https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector)、用命令式代码做这些操作。
-6. 让 [SDK](#webspatial-sdk) 能尽可能低成本、以[接近「一键安装」的方式](#installation)整合到现有的标准 Web 项目中，不改变项目[原有的开发流程、构建方式和部署方式](#preview)，确保这个网站在桌面/移动平台和普通浏览器里原有的效果、性能、调试都不受影响。
+6. 让 [SDK](#webspatial-sdk) 能尽可能低成本、以[接近「一键安装」的方式](#installation)整合到现有的标准 Web 项目中，不改变项目[原有的开发流程、构建方式和部署方式](#preview)，尽量减少对这个网站在桌面/移动平台和普通浏览器里原有效果、性能和调试体验的影响。
 7. 在 WebSpatial API 和 SDK 的支持下，Web 开发者做一个全新[空间应用](../concepts/spatial-computing.md#spatial-app)的方式应该跟开发普通网站一样。只要开发者愿意，这个应用仍然能作为一个标准网站来分发，保持 Web 原有的跨平台能力和[基于网址的用法](https://tpac2025.webspatial.dev/#instant-apps)。
 
 ## 支持的 Web 项目 {#supported-web-projects}
@@ -64,17 +64,16 @@ WebSpatial SDK 最新版本暂时有 bug，导致暂时不支持 styled-componen
 目前支持的[空间计算](../concepts/spatial-computing.md)平台有：
 
 - ✅ [visionOS](https://developer.apple.com/visionos/)（比如 Vision Pro 设备）：可以用 WebSpatial SDK 把网站打包成包含完整 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime) 的 [hybrid app](../concepts/webspatial-app.md#packaged-webspatial-app) 上架 App Store，具备原生的空间化效果
-- ✅ [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/) (比如 [Project Swan](https://developer.picoxr.com/blog/pico-developer-special-event-2026/) 设备)：在操作系统里的 [Web App Runtime](https://developer.picoxr.com/zh/document/web/web-app/) 里内置了 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime)，可直接让网站中的 WebSpatial API 生效
 
-正在推进 WebSpatial Runtime 实现的空间计算平台有：
+正在推进 WebSpatial Runtime 实现的空间计算平台（即将推出，尚未正式开放）有：
 
+- ⏳ [PICO OS 6](https://developer.picoxr.com/document/discover/pico-os-6-overview/)（比如 [Project Swan](https://developer.picoxr.com/blog/pico-developer-special-event-2026/) 设备）：在操作系统的 [Web App Runtime](https://developer.picoxr.com/zh/document/web/web-app/) 中内置 [WebSpatial Runtime](../concepts/webspatial-app.md#webspatial-runtime)
 - ⏳ [JSAR Runtime](https://jsar-project.github.io/runtime/)（比如 Rokid 眼镜设备）
 - ⏳ [IRIS OS](https://www.irisview.cn/)
 
-计划优先支持、但暂时需等待原生 API 稳定的空间计算平台有：
-
-- ⏳ [Android XR](https://www.android.com/xr/)（比如 XREAL 眼镜设备）
-- ⏳ [Meta Horizon OS](https://developers.meta.com/horizon/) （比如 Meta Quest 设备）
+:::note
+空间化功能需要受支持的 WebSpatial Runtime。功能可用性和具体表现取决于平台以及 SDK / Runtime 版本，应用可能需要针对平台做适配和测试。
+:::
 
 ## 安装 {#installation}
 
