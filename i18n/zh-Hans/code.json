@@ -74,6 +74,9 @@
   "homepage.section1.desc": {
     "message": "用你已经熟悉的 Web 技术栈构建：2D UI 继续服务桌面和移动端屏幕，并可在受支持的空间计算设备上适配为空间化 UI。"
   },
+  "homepage.section1.note": {
+    "message": "空间化功能需要受支持的 WebSpatial Runtime。功能可用性和具体表现取决于平台以及 SDK / Runtime 版本，应用可能需要针对平台做适配和测试。"
+  },
   "homepage.section1.largeScreen": {
     "message": "大屏"
   },

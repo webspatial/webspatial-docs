@@ -29,6 +29,10 @@ export default {
       'homepage.section1.desc',
       'Build with the web stack you already know: keep your 2D UI on desktop and mobile screens, and adapt it into Spatialized UI on supported spatial-computing devices.',
     ),
+    note: t(
+      'homepage.section1.note',
+      'Spatial features require a supported WebSpatial runtime. Availability and behavior depend on the platform and SDK/runtime version. Apps may need platform-specific adaptation and testing.',
+    ),
     children: [
       {
         title: t('homepage.section1.largeScreen', 'Large Screen'),

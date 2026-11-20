@@ -287,7 +287,10 @@ export default function Home(): ReactNode {
       <div className={styles.pageShell}>
         <Banner />
         <main className={styles.mainWrap}>
-          <Section title={data.section1.title} desc={data.section1.desc}>
+          <Section
+            title={data.section1.title}
+            desc={data.section1.desc}
+            note={data.section1.note}>
             <Slider data={data.section1.children} />
           </Section>
 
